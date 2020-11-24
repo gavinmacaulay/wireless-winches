@@ -17,7 +17,6 @@ class TicXbee(object):
         self.addr = 1
     
     def send_command(self, cmd, data_bytes):
-        #
         # data_byes should be an iterable data structure
         
         buf = bytearray([cmd])
@@ -62,9 +61,10 @@ speed = array.array('l', [100, 1000, 10000, 100000, 500000, 1000000, 10000000, 1
 stepping = array.array('B', [3, 3, 2, 2, 1, 0, 0, 0]) # slower speeds are to have substeps, unsigned 8-bit integer
 local_speed_i = -1
 
-# TODO: Setup baud rate of stdin/stdout
 tic = TicXbee()
 
+# TODO: May need to convert the tic.addr into 0, 1, or 2 for the use of winch
+# and an index into the received messages.
 winch = tic.addr # (0, 1, or 2)
 tic.exit_safe_start()
 
@@ -74,6 +74,10 @@ tic.exit_safe_start()
 
 for _ in range(4):
     xbee.receive()
+
+# To cater for a local control switch we should check if the local on/off 
+# switch is on and if so, pay attention to a up/down switch. Otherwise just
+# listen for wireless commands.
 
 while True:
     m = xbee.receive() # this does not block
