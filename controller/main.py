@@ -24,11 +24,9 @@ led = machine.Pin(machine.Pin.board.D4, machine.Pin.OUT)
 ledState = False
 
 # Table to convert the binary value from the encoder into a speed value
-speed = [6, 5, 4, 3, 2, 1, 0, 7]
-
-# TODO
-# Read encoder twice and only use value if it is the same both times, otherwise 
-#  leave unchanged
+#speed = [6, 5, 4, 3, 2, 1, 0, 7] 
+#speed = [223, 191, 159, 127, 95, 63, 0, 255]
+speed = [191, 159, 127, 95, 63, 31, 0, 255]
 
 # Time between checking controls (also the time between sending messages to the winches)
 pollInterval = 200 # [ms] 
@@ -65,8 +63,9 @@ while True:
                 s += stop
                 
             encoderValue = speedBit0.value() + 2*speedBit1.value() + 4*speedBit2.value()
-            s += str(speed[encoderValue])
-        
+            #s += str(speed[encoderValue])
+            s += '{:03d}'.format(speed[encoderValue])
+            
             # Send to whoever is listening
             xbee.transmit(xbee.ADDR_BROADCAST, s)
             

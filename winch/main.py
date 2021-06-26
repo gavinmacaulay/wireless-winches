@@ -1,20 +1,23 @@
 # Code to run on the Aqualyd echosounder calibration winches
 
 # TODO
-# Implement local switching (at a fixed speed)
+# - Implement local switching (at a fixed speed)??
+# - output debugging on bluetooth - need to detect if bluetooth connection exists
+#     before trying to send data
+# - get_variables() doesn't yet work
+# - deal with oddities when changing speed and stepping at the same time (faster baud rate?)
+# - have operation modes for: 'turn on but not operating', and 'turned on and operating'
 
-import machine
+#import machine
 import xbee
 import array
 #from xbee import relay
+from sys import stdin, stdout
 
 class TicXbee(object):
     def __init__(self):
-        self.i2c = machine.I2C(1, freq=100000)
         # Get the winch id
-        #addr = self.i2c.scan()
-        #self.addr = addr[0] # should only be one on the bus
-        self.addr = 1
+        self.addr = int(xbee.atcmd('NI'))
     
     def send_command(self, cmd, data_bytes):
         # data_byes should be an iterable data structure
@@ -22,50 +25,78 @@ class TicXbee(object):
         buf = bytearray([cmd])
         if data_bytes:
             buf.extend(bytes(data_bytes))
-            
-        #print(buf)
-        
-        #self.i2c.writeto(self.addr<<1, buf)
+         
+        stdout.buffer.write(buf)
+        #relay.send(relay.BLUETOOTH, 'Sent {} bytes to Tic.'.format(len(buf)))
+   
+    def get_variables(self, offset, length):
+        self.send_command(0xA1, [offset, length])
+        result = stdin.buffer.read(length)
+        if len(result) != length:
+            pass
+            #relay.send(relay.BLUETOOTH, "Expected to read {} bytes, got {}.".format(length, len(result)))
+        return bytearray(result) 
    
     def set_velocity(self, velocity, step_mode):
-        print('set_velocity = {}, stepping = {}'.format(velocity, step_mode))
+        #relay.send(relay.BLUETOOTH, 'Setting velocity to {}, stepping to {}'.format(velocity, step_mode))
         # A 32-bit write for the velocity
-        self.send_command(0xE3, [velocity >> 0 & 0xFF,
-                                 velocity >> 8 & 0xFF,
-                                 velocity >> 16 & 0xFF,
-                                 velocity >> 24 & 0xFF]) 
+        self.send_command(0xE3, [((velocity >>  7) & 1) | ((velocity >> 14) & 2) |
+                                 ((velocity >> 21) & 4) | ((velocity >> 28) & 8),
+                                 velocity >> 0 & 0x7F,
+                                 velocity >> 8 & 0x7F,
+                                 velocity >> 16 & 0x7F,
+                                 velocity >> 24 & 0x7F]) 
         # A 7-bit write for the stepping
         self.send_command(0x94, [step_mode & 127]) 
 
+    def get_serial_device_number(self):
+        n = self.get_variables(0x07, 1)
+        return n
+
     def reset_command_timeout(self):
-        print('reset_command_timeout')
+        #relay.send(relay.BLUETOOTH, 'Sent reset_command_timeout')
         self.send_command(0x8C, [])
 
     def exit_safe_start(self):
-        print('exit_safe_start')
+        #relay.send(relay.BLUETOOTH, 'Sent exit_safe_start')
         self.send_command(0x83, [])
 
-# Local control switch
-#winchout = machine.Pin(machine.Pin.board.D5, machine.Pin.IN, machine.Pin.PULL_UP)
-#winchin = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
+    def energize(self):
+        self.send_command(0x85, [])
 
-# pre-programmed Tic settings that are needed:
-# - command timeout
-# - max current
-# - max speed
-# - and others...
-
-# Motor speeds and substep setting for the 8 speeds (0-7) that come from the control unit
 # Use arrays for these instead of lists, for efficiency (as per micropython guidelines)
-speed = array.array('l', [100, 1000, 10000, 100000, 500000, 1000000, 10000000, 12000000]) # signed 32 bit integer
-stepping = array.array('B', [3, 3, 2, 2, 1, 0, 0, 0]) # slower speeds are to have substeps, unsigned 8-bit integer
-local_speed_i = -1
+
+# Given the parameters of the reel and motor, work out step rate needed to get
+# the desired line speed range.
+min_line_speed = 0.1 # [m/s]
+max_line_speed = 1.0 # [m/s]
+
+drum_diameter = 0.050 # [m]
+gearbox_ratio = 4.25 # the PG4 gearbox
+rotation_per_step = 1.8 # [deg] before gearbox
+substep_divider = 0.5 # setting in the motor driver 0.5 = half steps
+tic_multiplier = 10000.0 
+speed_steps = 256 # the number of different speeds to offer
+
+drum_circum = 3.14159 * drum_diameter # [m]
+tic_pulses_per_rev = 360.0/rotation_per_step * gearbox_ratio / substep_divider * tic_multiplier
+
+min_tic_pulses = min_line_speed / drum_circum * tic_pulses_per_rev
+max_tic_pulses = max_line_speed / drum_circum * tic_pulses_per_rev
+
+# note: there are some speeds that the motor resonates strongly at and for which
+# the motor 'jams'. These ranges need to be avoided...
+step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
+# speed as a signed 32 bit integer
+speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(0,speed_steps)])
+
+step_mode = 0 # full step
 
 tic = TicXbee()
 
-# TODO: May need to convert the tic.addr into 0, 1, or 2 for the use of winch
 # and an index into the received messages.
 winch = tic.addr # (0, 1, or 2)
+tic.energize()
 tic.exit_safe_start()
 
 # The micropython receive buffer needs to be emptied before we start processing
@@ -81,21 +112,13 @@ for _ in range(4):
 
 while True:
     m = xbee.receive() # this does not block
-    if m is None: # no new message, so check the local control switches
+    if m is None: # no new message
         pass
-        # # Check for local control inputs
-        # if winchout.value() == 0: # pulled low by a switch
-        #     velocity = speed[local_speed_i]
-        # elif winchin.value() == 0:
-        #     velocity = speed[local_speed_i] * -1
-        # else:
-        #     velocity = 0
-        # stepping = [-1]
     else:
         cmd = m['payload'].decode('ascii')
 
         # parse out the direction and speed from the payload
-        speed_num = int(cmd[3]) # 0-7
+        speed_num = int(cmd[3:6]) # 0-255
 
         #relay.send(relay.BLUETOOTH, cmd)
         
@@ -104,13 +127,15 @@ while True:
             velocity = 0
         elif dir_char == '1': # pay out
             velocity = speed[speed_num]
-        else: # is 2 and means haul in
+        elif dir_char == '2': # haul in
             velocity = -speed[speed_num]
+        else:
+            velocity = 0 # unknown direction, so stop!!!
 
-        step_mode = stepping[speed_num]
-
-        #print(cmd + ' ' + str(velocity) + ' ' + str(step_mode))
+        #print(cmd + ' ' + str(velocity))
 
         # Send to the Tic
+        tic.energize()
+        tic.exit_safe_start()
         tic.reset_command_timeout()
         tic.set_velocity(velocity, step_mode)
