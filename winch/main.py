@@ -1,23 +1,18 @@
 # Code to run on the Aqualyd echosounder calibration winches
 
 # TODO
-# - Implement local switching (at a fixed speed)??
 # - output debugging on bluetooth - need to detect if bluetooth connection exists
 #     before trying to send data
 # - get_variables() doesn't yet work
-# - deal with oddities when changing speed and stepping at the same time (faster baud rate?)
-# - have operation modes for: 'turn on but not operating', and 'turned on and operating'
 
-#import machine
 import xbee
 import array
-#from xbee import relay
 from sys import stdin, stdout
 
 class TicXbee(object):
     def __init__(self):
         # Get the winch id
-        self.addr = int(xbee.atcmd('NI'))
+        self.addr = int(xbee.atcmd('NI')[-1])
     
     def send_command(self, cmd, data_bytes):
         # data_byes should be an iterable data structure
@@ -64,7 +59,6 @@ class TicXbee(object):
     def energize(self):
         self.send_command(0x85, [])
 
-# Use arrays for these instead of lists, for efficiency (as per micropython guidelines)
 
 # Given the parameters of the reel and motor, work out step rate needed to get
 # the desired line speed range.
@@ -87,7 +81,9 @@ max_tic_pulses = max_line_speed / drum_circum * tic_pulses_per_rev
 # note: there are some speeds that the motor resonates strongly at and for which
 # the motor 'jams'. These ranges need to be avoided...
 step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
-# speed as a signed 32 bit integer
+# speed as a signed 32 bit integer. Use array instead of list, 
+# for efficiency (as per micropython guidelines)
+
 speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(0,speed_steps)])
 
 step_mode = 0 # full step
@@ -95,7 +91,7 @@ step_mode = 0 # full step
 tic = TicXbee()
 
 # and an index into the received messages.
-winch = tic.addr # (0, 1, or 2)
+winch = tic.addr # (1, 2, or 3)
 tic.energize()
 tic.exit_safe_start()
 
@@ -106,10 +102,7 @@ tic.exit_safe_start()
 for _ in range(4):
     xbee.receive()
 
-# To cater for a local control switch we should check if the local on/off 
-# switch is on and if so, pay attention to a up/down switch. Otherwise just
-# listen for wireless commands.
-
+# Listen for wireless commands.
 while True:
     m = xbee.receive() # this does not block
     if m is None: # no new message
@@ -122,7 +115,7 @@ while True:
 
         #relay.send(relay.BLUETOOTH, cmd)
         
-        dir_char = cmd[winch]
+        dir_char = cmd[winch-1]
         if dir_char == '0':
             velocity = 0
         elif dir_char == '1': # pay out
