@@ -60,7 +60,7 @@ while True:
 
             s += '{:03d}'.format(speed >> 4)
             
-            print(s)
+            #print(s)
             
             # Send to whoever is listening
             xbee.transmit(xbee.ADDR_BROADCAST, s)
