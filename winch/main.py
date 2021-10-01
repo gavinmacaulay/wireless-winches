@@ -65,10 +65,10 @@ class TicXbee(object):
 min_line_speed = 0.1 # [m/s]
 max_line_speed = 1.0 # [m/s]
 
-drum_diameter = 0.050 # [m]
+drum_diameter = 0.200 # [m] effective, taking into account Shimano TR-100/200G reel gearing (1:4.3)
 gearbox_ratio = 4.25 # the PG4 gearbox
 rotation_per_step = 1.8 # [deg] before gearbox
-substep_divider = 0.5 # setting in the motor driver 0.5 = half steps
+substep_divider = 0.125 # setting in the motor driver 
 tic_multiplier = 10000.0 
 speed_steps = 256 # the number of different speeds to offer
 
