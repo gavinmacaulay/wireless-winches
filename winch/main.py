@@ -65,10 +65,10 @@ class TicXbee(object):
 min_line_speed = 0.1 # [m/s]
 max_line_speed = 1.0 # [m/s]
 
-drum_diameter = 0.200 # [m] effective, taking into account Shimano TR-100/200G reel gearing (1:4.3)
+drum_diameter = 0.070 # [m] 
 gearbox_ratio = 4.25 # the PG4 gearbox
 rotation_per_step = 1.8 # [deg] before gearbox
-substep_divider = 0.125 # setting in the motor driver 
+substep_divider = 0.5 # setting in the motor driver 
 tic_multiplier = 10000.0 
 speed_steps = 256 # the number of different speeds to offer
 
@@ -116,14 +116,12 @@ while True:
         #relay.send(relay.BLUETOOTH, cmd)
         
         dir_char = cmd[winch-1]
-        if dir_char == '0':
-            velocity = 0
-        elif dir_char == '1': # pay out
+        if dir_char == '1': # pay out
             velocity = speed[speed_num]
         elif dir_char == '2': # haul in
             velocity = -speed[speed_num]
-        else:
-            velocity = 0 # unknown direction, so stop!!!
+        else: # '0' or anything else
+            velocity = 0 # stop
 
         #print(cmd + ' ' + str(velocity))
 
