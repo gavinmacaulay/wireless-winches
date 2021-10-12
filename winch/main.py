@@ -69,7 +69,7 @@ drum_diameter = 0.070 # [m]
 gearbox_ratio = 4.25 # the PG4 gearbox
 rotation_per_step = 1.8 # [deg] before gearbox
 substep_divider = 0.5 # setting in the motor driver 
-tic_multiplier = 10000.0 
+tic_multiplier = 10000.0 # the tic wants pulse rates to be multiplied by this
 speed_steps = 256 # the number of different speeds to offer
 
 drum_circum = 3.14159 * drum_diameter # [m]
@@ -81,9 +81,9 @@ max_tic_pulses = max_line_speed / drum_circum * tic_pulses_per_rev
 # note: there are some speeds that the motor resonates strongly at and for which
 # the motor 'jams'. These ranges need to be avoided...
 step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
+
 # speed as a signed 32 bit integer. Use array instead of list, 
 # for efficiency (as per micropython guidelines)
-
 speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(0,speed_steps)])
 
 step_mode = 0 # full step
@@ -92,13 +92,14 @@ tic = TicXbee()
 
 # and an index into the received messages.
 winch = tic.addr # (1, 2, or 3)
+
+# get the motor controller started
 tic.energize()
 tic.exit_safe_start()
 
 # The micropython receive buffer needs to be emptied before we start processing
 # messages, but there is no flush() or similar call. 
 # The buffer can only hold 4 packets, so just read it 4 times quickly.
-
 for _ in range(4):
     xbee.receive()
 
@@ -108,13 +109,15 @@ while True:
     if m is None: # no new message
         pass
     else:
+        # pull out the message from the received data
         cmd = m['payload'].decode('ascii')
 
-        # parse out the direction and speed from the payload
+        # parse out the speed from the payload
         speed_num = int(cmd[3:6]) # 0-255
 
         #relay.send(relay.BLUETOOTH, cmd)
         
+        # and then the direction, to give velocity
         dir_char = cmd[winch-1]
         if dir_char == '1': # pay out
             velocity = speed[speed_num]
