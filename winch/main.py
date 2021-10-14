@@ -68,7 +68,7 @@ max_line_speed = 1.0 # [m/s]
 drum_diameter = 0.070 # [m] 
 gearbox_ratio = 4.25 # the PG4 gearbox
 rotation_per_step = 1.8 # [deg] before gearbox
-substep_divider = 0.5 # setting in the motor driver 
+substep_divider = 0.25 # setting in the motor driver 
 tic_multiplier = 10000.0 # the tic wants pulse rates to be multiplied by this
 speed_steps = 256 # the number of different speeds to offer
 

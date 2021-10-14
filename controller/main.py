@@ -21,7 +21,7 @@ led = machine.Pin(machine.Pin.board.D4, machine.Pin.OUT)
 ledState = False
 
 # Time between checking controls (also the time between sending messages to the winches)
-pollInterval = 200 # [ms] 
+pollInterval = 100 # [ms] 
 
 # Codes that are sent to the receivers
 stop = '0'
