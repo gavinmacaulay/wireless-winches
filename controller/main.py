@@ -54,10 +54,11 @@ while True:
             else:
                 s += stop
 
-            # The ADC is 12 bit, but we only want 8 bits to send to the winches,
-            # so chop off the lower bits (and remove some ADC noise too)                
+            # Get speed from the potentiometer
             speed = speedPot.read()
 
+            # The ADC is 12 bit, but we only want 8 bits to send to the winches,
+            # so chop off the lower bits (and it removes ADC noise too)                
             s += '{:03d}'.format(speed >> 4)
             
             #print(s)
