@@ -62,7 +62,7 @@ class TicXbee(object):
 
 # Given the parameters of the reel and motor, work out step rate needed to get
 # the desired line speed range.
-min_line_speed = 0.1 # [m/s]
+min_line_speed = 0.02 # [m/s]
 max_line_speed = 1.0 # [m/s]
 
 drum_diameter = 0.070 # [m] 
