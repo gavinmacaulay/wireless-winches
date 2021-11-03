@@ -6,14 +6,14 @@ import xbee
 import sys
 
 # Pin definitions
-winch1out = machine.Pin(machine.Pin.board.D12, machine.Pin.IN, machine.Pin.PULL_UP)
-winch1in = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
+winch1out = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
+winch1in = machine.Pin(machine.Pin.board.D12, machine.Pin.IN, machine.Pin.PULL_UP)
 
-winch2out = machine.Pin(machine.Pin.board.D11, machine.Pin.IN, machine.Pin.PULL_UP) # D18
-winch2in = machine.Pin(machine.Pin.board.D1, machine.Pin.IN, machine.Pin.PULL_UP) # D16
+winch2out = machine.Pin(machine.Pin.board.D1, machine.Pin.IN, machine.Pin.PULL_UP) # D18
+winch2in = machine.Pin(machine.Pin.board.D11, machine.Pin.IN, machine.Pin.PULL_UP) # D16
 
-winch3out = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
-winch3in = machine.Pin(machine.Pin.board.D2, machine.Pin.IN, machine.Pin.PULL_UP)
+winch3out = machine.Pin(machine.Pin.board.D2, machine.Pin.IN, machine.Pin.PULL_UP)
+winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
 
 speedPot = machine.ADC(machine.Pin.board.D0)
 
@@ -25,8 +25,8 @@ pollInterval = 100 # [ms]
 
 # Codes that are sent to the receivers
 stop = '0'
-up = '1'
-down = '2'
+up = '2'
+down = '1'
 
 while True:
     try:
