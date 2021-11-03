@@ -25,8 +25,8 @@ pollInterval = 100 # [ms]
 
 # Codes that are sent to the receivers
 stop = '0'
-up = '2'
-down = '1'
+up = '1'
+down = '2'
 
 while True:
     try:
