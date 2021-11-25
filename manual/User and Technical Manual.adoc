@@ -1,0 +1,97 @@
+= Wireless echosounder calibration winch manual
+:author: Gavin Macaulay, Aqualyd Limited
+:email: gavin@aqualyd.nz
+:revnumber: v1.0
+:revdata: June 2021
+:revremark: First draft
+:sectnums:
+:toc:
+:toclevels: 4
+
+== User Manual
+
+=== Operation
+
+The hand controller broadcasts a short message that contains the state that each winch should be in (speed and direction). Each winch selects out the data intended for itself based on its' identification number. Two complete calibration sets have been provided to CSIRO and this broadcast design allows for swapping of units between the two sets - it does not matter which hand controller is used, nor which winch of each identification number is used. 
+
+Using two hand controllers at the same time is currently not recommended as each controller is continually broadcasting messages. However, multiple winches with the same identification can be used at the same time - they will operate in sync (although whether this is a useful thing to do, I don't know!). 
+
+If the hand controller messages do not reach a winch (through a flat battery, being turned off, or the signal being blocked by objects) the winch will continue with the last command for XX seconds before stopping. When the hand controller messages start being received by the winch again, the winch will follow those new messages.
+
+The winches will free-wheel as long as no power is applied to the winches. When power is applied, the winch will follow the messages from the hand controller, or if none are being received, the winch will not rotate.
+
+There is currently no communication from the winches back to the hand controller.
+
+The hand controllers, range extenders, and winches automatically form a mesh network that allows for communication between the hand controller and winches as long as there is an available transmission path - this means that the hand controller (or range extender) does not neeed to be within range of all the winches.
+
+==== Installing the winches and poles
+
+Each winch is numbered - take care to place the winches in a location that fits with the layout of the winch switches on the hand controller. For example, if one pole is at the bow of the vessel and the other two poles on port and starboard side, place winch 1 at the bow, winch 2 to port and winch 3 to starboard.
+
+- Do not extend each section beyond the red mark.
+- Ensure each clip is tightened after extending.
+
+
+==== Hand controller
+
+Turn on the hand controller. Individual winches can be controlled using the three in/out switches, while the speed of the winches is controlled using the dial. Only use speed in the red section of the dial when the weight on individual winches is less than about 3 kg.
+
+Multiple winches can be operated at the same time - they all will use the speed from the speed dial.
+
+The winch in/out switches are set to pay out when the inner side of the switch is pressed. In that sense, the arrow on the switches indicates the direction that the sphere will move when viewed in a calibration plot.
+
+To make it easy to relate the three winch switches to the winch locations, rotate the hand controller so that the winch switches approximately match the locations of the winches on the vessel when facing towards teh bow. This will often mean holding the winch controller in a landscape orientation (see Figure).
+
+Once the hand controller is turned on, it sends messages to the winches about five times a second, even if no buttons are being pressed on the hand controller. 
+
+The battery in the hand controller will last about 40 hours.
+
+==== Range extender
+
+Turn the range extender on and place somewhere between the winches and where you will be using the winch controller. No other configuration is necessary. 
+
+The battery in the range extender will last about 40 hours.
+
+==== Charging batteries in the hand controller and range extender
+
+To charge the battery in the hand controller and range extender, connect a USB cable to the unit and a USB power supply (USB port on a computer is fine) and _turn the unit on_ (it will not charge if not turned on). Charging a flat battery will take about 4 hours - no harm will occur to the battery if it is connected to the charger for longer than this.
+
+No external indication is given as to whether the battery is being charged, but there is an internal LED that shows the charging state if desired.
+
+=== Routine maintenance
+
+After each use:
+
+- charge the batteries in the hand controller and range extender.
+- wash down the winches and poles in freshwater
+- separate out the telescopic parts of the poles and allow any water to dry before reassembling
+
+== Technical Manual
+
+=== Technologies used
+
+==== Wireless link and motor control
+
+==== Winches
+
+==== Poles
+
+The poles are telescopic and made of a 50/50 mix of carbon fibre and fibreglass.
+
+The poles are originally made for window washing and hence are readily available from many cleaning supplies sources.
+
+=== Changing winch identification
+
+Changing the winch identification may be necessary when replacing a faulty winch. 
+
+Each winch has an identification number (1, 2, or 3). This is used by each winch to select the appropriate part of the command message sent by the hand controller. This number is stored by the xbee3 unit in the NI (Node Identifier) parameter and retried once upon power up. Changing this number can be done using the Digi XCTU software (via USB) or the Digi XBee mobile app (via Bluetooth). 
+
+Note that the hand controller only sends out messages to winches with identification codes of 1, 2, or 3. If the winch NI parameter is set to any other value it will not act on any commands from the hand controller.
+
+=== Software
+
+The hand controller runs simple microPython software on the enclosed xbee3 module to translate buttons presses and speed setting into a short message that is broadcast to the winches. The winches receive these messages, decodes them and sends command messages to a Pololu stepper motor controller.
+
+The code that runs on these xbee3 modules is available on github: URL and can be updated using the Digi XCTU module connected to the hand controller and winches using the USB port.
+
+The range extender also includes an xbee3, but the routing of messages is handled by the xbee3 itself, rather than via a microPython program.
