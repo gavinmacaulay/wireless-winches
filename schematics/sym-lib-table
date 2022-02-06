@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name pololu)(type Legacy)(uri "C:/Users/gavin/Dropbox/Aqualyd/Projects/2020-09 Wireless calibration winches/schematics/Pololu stepper motor drivers/tic-t249.lib")(options "")(descr ""))
+  (lib (name winch-box-rescue)(type Legacy)(uri "${KIPRJMOD}/winch box-rescue.lib")(options "")(descr ""))
+)
