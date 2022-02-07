@@ -27,7 +27,7 @@ jobs:
     - name: move to generated-docs folder
       run: |
         mkdir -p generated-docs
-        mv "manual/User and Technical Manual.pdf" generated_docs/
+        mv "manual/User and Technical Manual.pdf" generated-docs/
         
     - name: Git stuff
       run: |
