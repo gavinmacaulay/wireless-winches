@@ -21,7 +21,7 @@ New Zealand
 
 https://www.aqualyd.nz
 
-This latest vesion of this manual is available on https://github.com/gavinmacaulay/wireless-winches.git[github].
+The latest vesion of this manual is available on https://github.com/gavinmacaulay/wireless-winches.git[github].
 
 = User Manual
 
@@ -33,7 +33,7 @@ This is the User Manual for the Aqualyd wireless echosounder calibration winch s
 
 The winch units each require a user-supplied 36 V DC power supply. The winch units have a water-resistant bulkhead connector for supply of the power and a matching cable connector is provided with each winch. It is the user's responsibility to source and connect a suitable 36 V DC power supply to each winch. 
 
-Pin 1 in the connector should be connected to the positive of the DC supply and pin 3 to the negative of the DC supply (there is no pin 2) (<<winch_schematic>>). The supplied connector can accomodate a cable with external diameter between 4 and 8 mm. 
+Pin 1 in the connector should be connected to the positive of the DC supply and pin 3 to the negative of the DC supply (there is no pin 2) (see <<Schematics>> for schematics). The supplied connector can accomodate a cable with external diameter between 4 and 8 mm. 
 
 Normal operation peak current is generally less than 0.7 A. The current used to hold a 3 kg load is generally less than 0.1 A. To ensure voltage stability during winch operations and allow for startup currents, the power supply system should be capable of supplying at least 1.5 A.
 
