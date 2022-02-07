@@ -21,6 +21,8 @@ New Zealand
 
 https://www.aqualyd.nz
 
+This latest vesion of this manual is available on https://github.com/gavinmacaulay/wireless-winches.git[github].
+
 = User Manual
 
 This is the User Manual for the Aqualyd wireless echosounder calibration winch system and provides information on setting up and using the system.
