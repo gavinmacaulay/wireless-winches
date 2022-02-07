@@ -34,7 +34,7 @@ jobs:
         git config --local user.email "gavin@aqualyd.nz"
         git config --local user.name "aqualyd-github-bot"
         git status
-        git add "manual/User and Technical Manual.pdf"
+        git add "generated-docs/User and Technical Manual.pdf"
         git commit --allow-empty -m "Push triggered asciidoc build"
         
     - name: Push changes
