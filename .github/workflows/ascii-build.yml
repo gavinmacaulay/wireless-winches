@@ -26,7 +26,7 @@ jobs:
     
     - name: move to generated-docs folder
       run: |
-        mkir -p generated-docs
+        mkdir -p generated-docs
         mv "manual/User and Technical Manual.pdf" generated_docs/
         
     - name: Git stuff
