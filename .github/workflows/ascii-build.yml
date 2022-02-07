@@ -2,7 +2,7 @@ name: BuildDocuments
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
       run: gem install asciidoctor-pdf
       
     - name: checkout 
-      uses: actions/checkout@master
+      uses: actions/checkout@main
 
     - name: build User and Technical Manual.adoc
       run: asciidoctor-pdf "User and Technical Manual.adoc"
@@ -33,7 +33,7 @@ jobs:
         git commit --allow-empty -m "Push triggered asciidoc build"
         
     - name: Push changes
-      uses: ad-m/github-push-action@master
+      uses: ad-m/github-push-action@main
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         
