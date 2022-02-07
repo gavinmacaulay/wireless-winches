@@ -24,6 +24,11 @@ jobs:
       run: asciidoctor-pdf "User and Technical Manual.adoc"
       working-directory: manual
     
+    - name: move to generated-docs folder
+      run: |
+        mkir -p generated-docs
+        mv "manual/User and Technical Manual.pdf" generated_docs/
+        
     - name: Git stuff
       run: |
         git config --local user.email "gavin@aqualyd.nz"
