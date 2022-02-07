@@ -14,14 +14,14 @@ jobs:
     - name: install git
       run: apk add --update git 
         
-    - name: install asciidoctor-bibtex
-      run: gem install asciidoctor-bibtex asciidoctor-mathematical
+    - name: install asciidoctor
+      run: gem install asciidoctor-pdf
       
     - name: checkout 
       uses: actions/checkout@master
 
     - name: build User and Technical Manual.adoc
-      run: asciidoctor-pdf User and Technical Manual.adoc  
+      run: asciidoctor-pdf "User and Technical Manual.adoc"
       working-directory: manual
     
     - name: Git stuff
@@ -29,7 +29,7 @@ jobs:
         git config --local user.email "gavin@aqualyd.nz"
         git config --local user.name "aqualyd-github-bot"
         git status
-        git add manual/User and Technical Manual.pdf
+        git add "manual/User and Technical Manual.pdf"
         git commit --allow-empty -m "Push triggered asciidoc build"
         
     - name: Push changes
