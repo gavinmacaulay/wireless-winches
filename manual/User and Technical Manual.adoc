@@ -58,7 +58,7 @@ Each winch/pole unit is assembled by:
 7. Secure the assembled units to the vessel,
 8. Connect power.
 
-The winch units are designed to be attached to a pipe or plate railing on a vessel(<<assembled_installed_winch_unit>>):
+The winch units are designed to be attached to a pipe or plate railing on a vessel (<<assembled_installed_winch_unit>>):
 
 - A pipe attachment uses the supplied hose clamps to secure the aluminium section of the winch unit to the railing. 
 - A plate attachment uses clamps (user supplied) to secure the winch units' plastic base or the aluminium section to the flat plate. 
