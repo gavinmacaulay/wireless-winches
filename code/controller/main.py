@@ -5,6 +5,15 @@ import utime
 import xbee
 import sys
 
+def receive_status(m):
+    if m is None: # no new message
+        pass
+    else:
+        # pull out the message from the received data
+        status = m['payload'].decode('ascii')
+        
+    print(status)
+
 # Pin definitions
 winch1out = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
 winch1in = machine.Pin(machine.Pin.board.D12, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -27,6 +36,8 @@ pollInterval = 100 # [ms]
 stop = '0'
 up = '2'
 down = '1'
+
+xbee.receive_callback(receive_status)
 
 while True:
     try:
