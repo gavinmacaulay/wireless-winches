@@ -5,6 +5,7 @@ import utime
 import xbee
 import sys
 
+# callback for when data is received from the winches
 def receive_status(m):
     if m is None: # no new message
         pass
