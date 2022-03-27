@@ -13,6 +13,7 @@ def receive_status(m):
         # pull out the message from the received data
         status = m['payload'].decode('ascii')
         
+    # goes out on the UART
     print(status)
 
 # Pin definitions
