@@ -14,24 +14,25 @@ with serial.Serial('COM6', 9600, timeout=10) as s:
     s.reset_input_buffer()
     while True:
         line = s.readline()
-        
+
         line = line.decode('ascii').rstrip()
+
+        try:       
+            winch_id, vin, xbee_temp, position, velocity, current = line.split(',')
+        except ValueError:
+            print(f'Unable to parse line: "{line}"')
+            continue
         
-        winch_id, vin, xbee_temp, current, position, velocity = line.split(',')
-        
-        velocity = int(velocity)
-        position = int(position)
+        velocity = float(velocity)
+        position = float(position)
         
         speed = abs(velocity)
         if velocity < 0:
-            direction = 'down'
+            direction = 'out'
         elif velocity > 0:
-            direction = 'up'
+            direction = 'in'
         else:
             direction = ''
-        
-        speed = speed / 1e6 / 25
-        position = position / 1e6
         
         print(f'Winch {winch_id}: Vin = {vin} V, XBee temperature = {xbee_temp} °C')
         print(f'        Line out = {position:.2f} m, Speed = {speed:.2f} m/s {direction}')
