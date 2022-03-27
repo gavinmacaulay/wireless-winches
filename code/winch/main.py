@@ -79,14 +79,13 @@ def get_status():
     current_limit_bytes = tic.get_variables(0x4a, 1) # unsigned 8bit, 40 mA steps
     current_limit = int.from_bytes(current_limit_bytes, 'little') * 40
     
-    # Get current position
-    position = tic.get_variables(0x22, 4) # signed 32-bit
-    position = int.from_bytes(position, 'little') # microsteps
-    position = twos_complement(position, 32)
+    # Get position & velocity
+    state = tic.get_variables(0x22, 8) # 2 x signed 32-bit
     
-    # Get current velocity
-    velocity = tic.get_variables(0x26, 4) # signed 32-bit
-    velocity = int.from_bytes(velocity, 'little') # microsteps per 10000s
+    position = int.from_bytes(state[0:4], 'little') # microsteps
+    position = -1 * twos_complement(position, 32)
+    
+    velocity = int.from_bytes(state[4:8], 'little') # microsteps per 10000s
     velocity = twos_complement(velocity, 32)
         
     # Get Xbee internal temperature
@@ -94,7 +93,11 @@ def get_status():
     if xbee_temp > 0x7FFF:
         xbee_temp = xbee_temp - 0x10000
         
-    return (vin, current_limit, position, velocity, xbee_temp)
+    return (vin, position, velocity, xbee_temp, current_limit)
+
+# Config variables
+status_period = 5 # a status message every x recevied messages from controller
+max_motor_current = 2720 # [mA] From motor specs
 
 # Given the parameters of the reel and motor, work out step rate needed to get
 # the desired line speed range.
@@ -114,6 +117,10 @@ tic_pulses_per_rev = 360.0/rotation_per_step * gearbox_ratio / substep_divider *
 min_tic_pulses = min_line_speed / drum_circum * tic_pulses_per_rev
 max_tic_pulses = max_line_speed / drum_circum * tic_pulses_per_rev
 
+# Use to convert pulses/s and position ticks to m/s and m
+pulses_factor_speed = drum_circum / tic_pulses_per_rev
+pulses_factor_position = drum_circum / tic_pulses_per_rev * tic_multiplier
+
 # note: there are some speeds that the motor resonates strongly at and for which
 # the motor 'jams'. These ranges need to be avoided...
 step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
@@ -122,10 +129,7 @@ step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
 # for efficiency (as per micropython guidelines)
 speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(0,speed_steps)])
 
-step_mode = 0 # full step
 step_mode = 2 # 1/4 step
-
-max_motor_current = 2720 # [mA]
 
 led = Pin(Pin.board.D10, Pin.OUT)
 max_payload_len = int(xbee.atcmd('NP')) # for sending over the air
@@ -147,6 +151,7 @@ for _ in range(4):
 
 status_counter = 0
 prev_current_limit = 0
+
 # Listen for wireless commands.
 while True:
     m = xbee.receive() # this does not block
@@ -199,18 +204,20 @@ while True:
             prev_current_limit = current_limit
 
         # get and send a status message to the controller
-        if status_counter >= 10:
+        if status_counter >= status_period:
             status_counter = 0
 
             #led.value(True)
-            (vin, current_limit, position, velocity, t) = get_status()
+            (vin, position, velocity, t, current_limit) = get_status()
+            velocity = velocity * pulses_factor_speed
+            position = position * pulses_factor_position
             #led.value(False)
         
-            data = '{},{:.1f},{},{},{},{}'.format(1, vin, t, current_limit, position, velocity)
+            data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, position, velocity, current_limit)
             if len(data) > max_payload_len:
-                data = 'Message too long'
+                data = f'{winch},error - message too long'
         
-            # send to whoever send the most recent message we received
+            # send to whoever sent the most recent message we received
             try:
                 led.value(True)
                 xbee.transmit(sender_addr, data)
