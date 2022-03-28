@@ -4,6 +4,7 @@ import machine
 import utime
 import xbee
 import sys
+from xbee import relay
 
 # callback for when data is received from the winches
 def receive_status(m):
@@ -15,6 +16,12 @@ def receive_status(m):
         
     # goes out on the UART
     print(status)
+    
+    # and out on Bluetooth
+    try:
+        relay.send(relay.BLUETOOTH, status)
+    except:
+        pass
 
 # Pin definitions
 winch1out = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
