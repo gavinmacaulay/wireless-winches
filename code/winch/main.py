@@ -215,7 +215,7 @@ while True:
         
             data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, position, velocity, current_limit)
             if len(data) > max_payload_len:
-                data = f'{winch},error - message too long'
+                data = '{},error - message too long'.format(winch)
         
             # send to whoever sent the most recent message we received
             try:
