@@ -27,9 +27,9 @@ with serial.Serial('COM6', 9600, timeout=10) as s:
         position = float(position)
         
         speed = abs(velocity)
-        if velocity < 0:
+        if velocity > 0:
             direction = 'out'
-        elif velocity > 0:
+        elif velocity < 0:
             direction = 'in'
         else:
             direction = ''
