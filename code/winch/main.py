@@ -86,7 +86,7 @@ def get_status():
     position = -1 * twos_complement(position, 32)
     
     velocity = int.from_bytes(state[4:8], 'little') # microsteps per 10000s
-    velocity = twos_complement(velocity, 32)
+    velocity = -1 * twos_complement(velocity, 32)
         
     # Get Xbee internal temperature
     xbee_temp = int(xbee.atcmd('TP')) # 2's complement
