@@ -5,6 +5,7 @@ Created on Sun Mar 27 17:24:15 2022
 @author: gavin
 """
 import serial
+from datetime import datetime
 
 # A simple display of winch status
 
@@ -14,7 +15,7 @@ with serial.Serial('COM6', 9600, timeout=10) as s:
     s.reset_input_buffer()
     while True:
         line = s.readline()
-
+        print(line)
         line = line.decode('ascii').rstrip()
 
         try:       
@@ -33,7 +34,10 @@ with serial.Serial('COM6', 9600, timeout=10) as s:
             direction = 'in'
         else:
             direction = ''
+
+        now = datetime.today().isoformat()
         
+        print(now)
         print(f'Winch {winch_id}: Vin = {vin} V, XBee temperature = {xbee_temp} °C')
         print(f'        Line out = {position:.2f} m, Speed = {speed:.2f} m/s {direction}')
         print(f'        Max current setting = {current} mA')
