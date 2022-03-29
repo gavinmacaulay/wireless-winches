@@ -99,6 +99,10 @@ def get_status():
 status_period = 5 # a status message every x recevied messages from controller
 max_motor_current = 2720 # [mA] From motor specs
 
+# Reduce the max allowed motor current when winch speed is slow
+current_limit_slow_speed = 1000 # [mA]
+current_limit_speed_factor = 0.05 # proportion of max speed
+
 # Given the parameters of the reel and motor, work out step rate needed to get
 # the desired line speed range.
 min_line_speed = 0.02 # [m/s]
@@ -190,11 +194,8 @@ while True:
         # enough given the use of battery power for the motor).
         
         # could get velocity, but we have just set it, so work with that...
-        
-        if abs(velocity) < max_tic_pulses * 0.1:
-            current_limit = 1000
-        elif abs(velocity) < max_tic_pulses * 0.5:
-            current_limit = 1500
+        if abs(velocity) <= (max_tic_pulses * current_limit_speed_factor):
+            current_limit = current_limit_slow_speed
         else:
             current_limit = max_motor_current
          
