@@ -96,12 +96,12 @@ def get_status():
     return (vin, position, velocity, xbee_temp, current_limit)
 
 # Config variables
-status_period = 5 # a status message every x recevied messages from controller
+status_period = 5 # generate a status message every x recieved messages from controller
 max_motor_current = 2720 # [mA] From motor specs
 
-# Reduce the max allowed motor current when winch speed is slow
-current_limit_slow_speed = 1000 # [mA]
-current_limit_speed_factor = 0.05 # proportion of max speed
+# Reduce the max allowed motor current when winch is stopped. This significantly
+# reduces the power used during a calibration.
+current_limit_stationary = 1000 # [mA]
 
 # Given the parameters of the reel and motor, work out step rate needed to get
 # the desired line speed range.
@@ -114,6 +114,8 @@ rotation_per_step = 1.8 # [deg] before gearbox
 substep_divider = 0.25 # setting in the motor driver 
 tic_multiplier = 10000.0 # the tic wants pulse rates to be multiplied by this
 speed_steps = 256 # the number of different speeds to offer
+
+step_mode = 2 # 1/4 step
 
 drum_circum = 3.14159 * drum_diameter # [m]
 tic_pulses_per_rev = 360.0/rotation_per_step * gearbox_ratio / substep_divider * tic_multiplier
@@ -132,8 +134,6 @@ step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
 # speed as a signed 32 bit integer. Use array instead of list, 
 # for efficiency (as per micropython guidelines)
 speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(0,speed_steps)])
-
-step_mode = 2 # 1/4 step
 
 led = Pin(Pin.board.D10, Pin.OUT)
 max_payload_len = int(xbee.atcmd('NP')) # for sending over the air
@@ -189,13 +189,8 @@ while True:
         tic.reset_command_timeout()
         tic.set_velocity(velocity, step_mode)
         
-        # dynamically adjust the maximum motor current to minimise the power
-        # usage (since the tic249 automatic current management isn't aggresive
-        # enough given the use of battery power for the motor).
-        
-        # could get velocity, but we have just set it, so work with that...
-        if abs(velocity) <= (max_tic_pulses * current_limit_speed_factor):
-            current_limit = current_limit_slow_speed
+        if velocity == 0
+            current_limit = current_limit_stationary
         else:
             current_limit = max_motor_current
          
@@ -208,11 +203,9 @@ while True:
         if status_counter >= status_period:
             status_counter = 0
 
-            #led.value(True)
             (vin, position, velocity, t, current_limit) = get_status()
             velocity = velocity * pulses_factor_speed
             position = position * pulses_factor_position
-            #led.value(False)
         
             data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, position, velocity, current_limit)
             if len(data) > max_payload_len:
