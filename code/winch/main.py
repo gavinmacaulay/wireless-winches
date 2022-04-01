@@ -155,6 +155,7 @@ for _ in range(4):
 
 status_counter = 0
 prev_current_limit = 0
+velocity_actual = None
 
 # Listen for wireless commands.
 while True:
@@ -177,19 +178,21 @@ while True:
         # and then the direction, to give velocity
         dir_char = cmd[winch-1]
         if dir_char == '1': # pay out
-            velocity = speed[speed_num]
+            velocity_req = speed[speed_num]
         elif dir_char == '2': # haul in
-            velocity = -speed[speed_num]
+            velocity_req = -speed[speed_num]
         else: # '0' or anything else
-            velocity = 0 # stop
+            velocity_req = 0 # stop
 
         # Send to the Tic
         tic.energize()
         tic.exit_safe_start()
         tic.reset_command_timeout()
-        tic.set_velocity(velocity, step_mode)
-        
-        if velocity == 0
+        tic.set_velocity(velocity_req, step_mode)
+
+        # dont't change the motor max current until we want to and have
+        # reached zero speed 
+        if (velocity_req == 0) and (velocity_actual == 0):
             current_limit = current_limit_stationary
         else:
             current_limit = max_motor_current
@@ -203,11 +206,11 @@ while True:
         if status_counter >= status_period:
             status_counter = 0
 
-            (vin, position, velocity, t, current_limit) = get_status()
-            velocity = velocity * pulses_factor_speed
-            position = position * pulses_factor_position
+            (vin, pos_actual, velocity_actual, t, current_limit) = get_status()
+            v_physical = velocity_actual * pulses_factor_speed # [m/s]
+            p_physical = pos_actual * pulses_factor_position # [m]
         
-            data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, position, velocity, current_limit)
+            data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, p_physical, v_physical, current_limit)
             if len(data) > max_payload_len:
                 data = '{},error - message too long'.format(winch)
         
