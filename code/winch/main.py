@@ -188,10 +188,12 @@ while True:
         tic.energize()
         tic.exit_safe_start()
         tic.reset_command_timeout()
-        tic.set_velocity(velocity_req, step_mode)
 
-        # dont't change the motor max current until we want to and have
-        # reached zero speed 
+        # To reduce power usage, limit the motor current when the winch is
+        # stationary. Only do this when the motor is actually stationary, and 
+        # when going from stationary to moving, increase the current before
+        # moving the motor.
+
         if (velocity_req == 0) and (velocity_actual == 0):
             current_limit = current_limit_stationary
         else:
@@ -201,6 +203,10 @@ while True:
         if prev_current_limit != current_limit:
             tic.set_current_limit(current_limit)
             prev_current_limit = current_limit
+
+        # once the current limit is adjusted (if necessary), change the 
+        # requested velocity
+        tic.set_velocity(velocity_req, step_mode)
 
         # get and send a status message to the controller
         if status_counter >= status_period:
