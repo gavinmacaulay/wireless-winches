@@ -20,6 +20,7 @@ from collections import namedtuple
 import serial
 import serial.tools.list_ports
 from pathlib import Path
+import time
 
 if sys.platform == "win32":
     import win32api
@@ -65,7 +66,7 @@ def main():
     timestampLabel = ttk.Label(root, text='Time unknown...')
     timestampLabel.grid(row=0, column=0, columnspan=4)
 
-    ttk.Label(root, text='Winch [m]:').grid(row=1, sticky=tk.E)
+    ttk.Label(root, text='Winch:').grid(row=1, sticky=tk.E)
     for i in range(3):
         w_label = ttk.Label(root, text=f'{i+1}', anchor='e', width=10)
         w_label.grid(row=1, column=i+1, padx=5, sticky=tk.E+tk.W)
@@ -156,6 +157,7 @@ def COM_listen(port, dataSource):
             f.reset_input_buffer()
         except:
             logging.error(sys.exc_info()[1])
+            queue.put(Data(timestamp=datetime.utcnow(), source=dataSource, reading='no com port'))
             sleep(2.0)
         else:
             try:
@@ -186,20 +188,54 @@ class dataDisplayer:
         
         self.checkQueueInterval = 100 # [ms] duration between checking the queue of received
         
+        self.rawPosition = np.array([np.nan, np.nan, np.nan])
+        self.lastRawPosition = np.array([np.nan, np.nan, np.nan])
+        
         self.position = np.array([np.nan, np.nan, np.nan])
         self.velocity = np.array([np.nan, np.nan, np.nan])
         self.temperature = np.array([np.nan, np.nan, np.nan])
         self.battery = np.array([np.nan, np.nan, np.nan])
+        self.dataReceivedTime = [time.time(), time.time(), time.time()]
+        
+        self.positionOffset = np.array([0.0, 0.0, 0.0])
+        
+        self.style = ttk.Style()
+        self.style.configure("LowBattVoltage.TLabel", foreground="red")
+        self.style.configure("NormalBattVoltage.TLabel", foreground="black")
+        self.newTimeout = [True, True, True]
+        
+        self.LowBattVoltageLevel = 36.0 # [V]
+        self.noDataTimeout = 1.5 # [s] UI goes grey if no messages in this time
+        self.maxPositionJump = 1 # [m] larger than this is taken as loss of power at winch
         
     def updateUI(self, timestamp, widgets):
 
-        widgets.time.config(text='{:%Y-%m-%d (%a) %H:%M:%S UTC}'.format(timestamp))
+        widgets.time.config(text='{:%Y-%m-%d %H:%M:%S UTC}'.format(timestamp))
+        
+        now = time.time()
         
         for i in range(3):
-            widgets.p[i].config(text='{:.2f}'.format(self.position[i]))
-            widgets.v[i].config(text='{:.2f}{}'.format(abs(self.velocity[i]), self.getDirectionArrow(self.velocity[i])))
-            widgets.t[i].config(text='{:.0f}'.format(self.temperature[i]))
-            widgets.b[i].config(text='{}'.format(self.battery[i]))         
+            if (now - self.dataReceivedTime[i]) > self.noDataTimeout:
+                state = 'disabled'
+                if self.newTimeout[i]:
+                    logging.info('Message timeout on winch ' + str(i+1))
+                    self.newTimeout[i] = False
+            else:
+                state = 'enabled'
+                if not self.newTimeout[i]:
+                    logging.info('Messages received again from winch ' + str(i+1))
+                    self.newTimeout[i] = True
+                
+            widgets.p[i].config(text='{:.2f}'.format(self.position[i]), state=state)
+            widgets.v[i].config(text='{:.2f}{}'.format(abs(self.velocity[i]), 
+                                self.getDirectionArrow(self.velocity[i])), state=state)
+            widgets.t[i].config(text='{:.0f}'.format(self.temperature[i]), state=state)
+        
+            battStyle = "NormalBattVoltage.TLabel"
+            if self.battery[i] < self.LowBattVoltageLevel:
+                battStyle = "LowBattVoltage.TLabel"
+                
+            widgets.b[i].config(text='{}'.format(self.battery[i]), style=battStyle, state=state)
 
     def getDirectionArrow(self, v):
         dirn = ''
@@ -221,7 +257,7 @@ class dataDisplayer:
                 
                     line = message.reading
                     line = line.rstrip()      
-                
+                    logging.info("Received: '{}'".format(line))
                     parts = line.split(',')
                     if len(parts) == 6:
                         (winch_id, vin, xbee_temp, position, velocity, current) = parts
@@ -229,23 +265,29 @@ class dataDisplayer:
                         position = to_float(position)
                     
                         i = int(winch_id) - 1
-                        self.position[i] = position
+                        self.lastRawPosition[i] = self.rawPosition[i]
+                        self.rawPosition[i] = position
+
+                        # Detect a power reset on a winch and adjust offset to keep 
+                        # the position the same as before the power reset. This assumes
+                        # that the winch was not rotated when powered off.
+                        if abs(self.rawPosition[i] - self.lastRawPosition[i]) > self.maxPositionJump:
+                            logging.info('Jump in winch position - power restored to winch ' + str(i+1) + '?')
+                            self.positionOffset[i] += (self.lastRawPosition[i] - self.rawPosition[i])
+                        
+                        self.position[i] = self.rawPosition[i] + self.positionOffset[i]
+
                         self.velocity[i] = velocity
                         self.temperature[i] = xbee_temp
                         self.battery[i] = vin
-
-                        # for testing                    
-                        self.position[i+1] = position
-                        self.velocity[i+1] = velocity
-                        self.temperature[i+1] = xbee_temp
-                        self.battery[i+1] = vin
-
-                        self.position[i+2] = position
-                        self.velocity[i+2] = velocity
-                        self.temperature[i+2] = xbee_temp
-                        self.battery[i+2] = vin
+                        self.dataReceivedTime[i] = time.time()
 
                         self.updateUI(message.timestamp, widgets)
+                    elif line == 'no com port':
+                        # force the UI to go grey
+                        for i in range(3):
+                            self.dataReceivedTime[i] = time.time() - 2*self.noDataTimeout
+                            self.updateUI(message.timestamp, widgets)
                     else:
                         logging.warning('Received malformed data: ' + line)
 
@@ -259,49 +301,48 @@ class dataDisplayer:
         job = root.after(self.checkQueueInterval, self.newData, root, widgets)
         
     def openConfigDialog(self):
-        inputDialog = configDialog(root)
+        inputDialog = configDialog(root, self.positionOffset)
         root.wait_window(inputDialog.top)
-        print('Reference weight mass [g]: ', inputDialog.referenceMass)
+        #print('Reference weight mass [g]: ', inputDialog.referenceMass)
         # does inputDialog get cleaned up here?
 
             
 class configDialog:
-    def __init__(self, parent):
-        # self.refCOMport = tk.StringVar()
-        # self.krillCOMport = tk.StringVar()
-        # COMports = ('COM3', 'COM4', 'COM5')
+    def __init__(self, parent, offsets):
 
-        # top = self.top = tk.Toplevel(parent)
-        # self.refMassLabel = tk.Label(top, text='Reference mass [g]')
-        # self.refMassEntry = tk.Entry(top)
-        # self.refMassLabel.grid(row=0)
-        # self.refMassEntry.grid(row=0,column=1)
-        
-        # self.refBalanceLabel = tk.Label(top, text='Reference balance COM port')
-        # self.krillBalanceLabel = tk.Label(top, text='Krill balance COM port')
-        # self.refBalanceList = ttk.Combobox(top, textvariable=self.refCOMport)
-        # self.refBalanceList['values'] = COMports
-        # self.krillBalanceList = ttk.Combobox(top, textvariable=self.krillCOMport)
-        # self.krillBalanceList['values'] = COMports
+        default_font = font.nametofont('TkDefaultFont')
+        default_font.configure(size=24)        
 
-        # self.refBalanceLabel.grid(row=1)
-        # self.refBalanceList.grid(row=1,column=1)
-        # self.krillBalanceLabel.grid(row=2)
-        # self.krillBalanceList.grid(row=2,column=1)
-        
-        self.OKButton = ttk.Button(top, text='OK', command=self.send)
-        self.OKButton.grid(row=3,column=0)
-        
-        self.cancelButton = ttk.Button(top, text='Cancel', command=self.close)
-        self.cancelButton.grid(row=3,column=1)
+        self.zeroValue = [tk.StringVar(root, value=str(offsets[0])), 
+                          tk.StringVar(root, value=str(offsets[1])),
+                          tk.StringVar(root, value=str(offsets[2]))]
 
-    def send(self):
-        # self.referenceMass = self.refMassEntry.get()
-        # self.refBalancePort = ''
-        # self.krillBalancePort = ''
-        self.close()
+        self.top = tk.Toplevel(parent)
+        for i in range(3):
+            ttk.Label(self.top, text='Winch {} length [m]:'.format(i+1)).grid(row=i+1, column=0)
+            e = ttk.Entry(self.top, font=default_font, justify=tk.CENTER, textvariable=self.zeroValue[i]).grid(row=i+1, column=1)
+            ttk.Button(self.top, text='Set', command=lambda: self.setLength(i)).grid(row=i+1, column=2)
+        
+        ttk.Separator(self.top).grid(row=4, columnspan=3, sticky=tk.EW)
+        frame = tk.Frame(self.top)
+        frame.grid(row=5, column=0, columnspan=3, sticky=tk.NSEW)
+
+        self.OKButton = ttk.Button(frame, text='Close', command=self.close).grid(row=0, column=0, sticky=tk.NSEW)
+
+        for i in range(0, frame.grid_size()[0]):
+           frame.grid_columnconfigure(i, weight=1)
+
+        # Make the widgets in the grid expand to fill the space available
+        for i in range(0, self.top.grid_size()[0]):
+            self.top.grid_columnconfigure(i, weight=1)
+        for i in range(0, self.top.grid_size()[1]):
+            self.top.grid_rowconfigure(i, weight=0)
+
+    def setLength(self, winch):
+        print(winch)
         
     def close(self):
+        print(self.zeroValue[0].get())
         self.top.destroy()
         
 def to_float(x):
