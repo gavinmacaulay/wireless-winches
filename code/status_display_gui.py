@@ -204,7 +204,7 @@ class dataDisplayer:
         self.style.configure("NormalBattVoltage.TLabel", foreground="black")
         self.newTimeout = [True, True, True]
         
-        self.LowBattVoltageLevel = 36.0 # [V]
+        self.LowBattVoltageLevel = 33.0 # [V]
         self.noDataTimeout = 1.5 # [s] UI goes grey if no messages in this time
         self.maxPositionJump = 1 # [m] larger than this is taken as loss of power at winch
         
