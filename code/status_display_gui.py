@@ -339,10 +339,11 @@ class configDialog:
             self.top.grid_rowconfigure(i, weight=0)
 
     def setLength(self, winch):
-        print(winch)
+        #print(winch)
+        pass
         
     def close(self):
-        print(self.zeroValue[0].get())
+        #print(self.zeroValue[0].get())
         self.top.destroy()
         
 def to_float(x):
