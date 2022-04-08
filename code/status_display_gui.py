@@ -195,6 +195,7 @@ class dataDisplayer:
         self.velocity = np.array([np.nan, np.nan, np.nan])
         self.temperature = np.array([np.nan, np.nan, np.nan])
         self.battery = np.array([np.nan, np.nan, np.nan])
+        self.batteryRaw = np.full((3,100), np.nan) # we'll do a running mean on this to get self.battery
         self.dataReceivedTime = [time.time(), time.time(), time.time()]
         
         self.positionOffset = np.array([0.0, 0.0, 0.0])
@@ -235,7 +236,7 @@ class dataDisplayer:
             if self.battery[i] < self.LowBattVoltageLevel:
                 battStyle = "LowBattVoltage.TLabel"
                 
-            widgets.b[i].config(text='{}'.format(self.battery[i]), style=battStyle, state=state)
+            widgets.b[i].config(text='{:.1f}'.format(self.battery[i]), style=battStyle, state=state)
 
     def getDirectionArrow(self, v):
         dirn = ''
@@ -279,7 +280,9 @@ class dataDisplayer:
 
                         self.velocity[i] = velocity
                         self.temperature[i] = xbee_temp
-                        self.battery[i] = vin
+                        self.batteryRaw[i,0:-1] = self.batteryRaw[i,1:] # shift
+                        self.batteryRaw[i,-1] = vin
+                        self.battery[i] = np.nanmean(self.batteryRaw[i,:])
                         self.dataReceivedTime[i] = time.time()
 
                         self.updateUI(message.timestamp, widgets)
