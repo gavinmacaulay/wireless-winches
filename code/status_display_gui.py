@@ -165,15 +165,18 @@ def COM_listen(port, dataSource):
             
                 while True:
                     line = f.readline()
-
-                    try:
-                        line = line.decode('utf-8')
-                    except UnicodeDecodeError:
-                        pass
+                    
+                    if not line: # probably timed out
+                        queue.put(Data(timestamp=datetime.now(), source=dataSource, reading = 'timed out'))
                     else:
-                        t = datetime.utcnow()
-                        data = Data(timestamp=t, source=dataSource, reading=line)
-                        queue.put(data)
+                        try:
+                            line = line.decode('utf-8')
+                        except UnicodeDecodeError:
+                            pass
+                        else:
+                            t = datetime.utcnow()
+                            data = Data(timestamp=t, source=dataSource, reading=line)
+                            queue.put(data)
             except:
                 logging.warning(sys.exc_info()[1])
                 f.close()
@@ -286,7 +289,7 @@ class dataDisplayer:
                         self.dataReceivedTime[i] = time.time()
 
                         self.updateUI(message.timestamp, widgets)
-                    elif line == 'no com port':
+                    elif (line == 'no com port') or (line == 'timed out'):
                         # force the UI to go grey
                         for i in range(3):
                             self.dataReceivedTime[i] = time.time() - 2*self.noDataTimeout
