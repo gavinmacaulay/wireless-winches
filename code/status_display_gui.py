@@ -197,6 +197,7 @@ class dataDisplayer:
         self.position = np.array([np.nan, np.nan, np.nan])
         self.velocity = np.array([np.nan, np.nan, np.nan])
         self.temperature = np.array([np.nan, np.nan, np.nan])
+        self.temperatureRaw = np.full((3,100), np.nan) # we'll do a running mean on this to get self.temperature
         self.battery = np.array([np.nan, np.nan, np.nan])
         self.batteryRaw = np.full((3,100), np.nan) # we'll do a running mean on this to get self.battery
         self.dataReceivedTime = [time.time(), time.time(), time.time()]
@@ -233,7 +234,7 @@ class dataDisplayer:
             widgets.p[i].config(text='{:.2f}'.format(self.position[i]), state=state)
             widgets.v[i].config(text='{:.2f}{}'.format(abs(self.velocity[i]), 
                                 self.getDirectionArrow(self.velocity[i])), state=state)
-            widgets.t[i].config(text='{:.0f}'.format(self.temperature[i]), state=state)
+            widgets.t[i].config(text='{:.1f}'.format(self.temperature[i]), state=state)
         
             battStyle = "NormalBattVoltage.TLabel"
             if self.battery[i] < self.LowBattVoltageLevel:
@@ -282,10 +283,15 @@ class dataDisplayer:
                         self.position[i] = self.rawPosition[i] + self.positionOffset[i]
 
                         self.velocity[i] = velocity
-                        self.temperature[i] = xbee_temp
+                        
+                        self.temperatureRaw[i,0:-1] = self.temperatureRaw[i,1:] # shift
+                        self.temperatureRaw[i,-1] = xbee_temp
+                        self.temperature[i] = np.nanmean(self.temperatureRaw[i,:])
+
                         self.batteryRaw[i,0:-1] = self.batteryRaw[i,1:] # shift
                         self.batteryRaw[i,-1] = vin
                         self.battery[i] = np.nanmean(self.batteryRaw[i,:])
+                        
                         self.dataReceivedTime[i] = time.time()
 
                         self.updateUI(message.timestamp, widgets)
@@ -309,9 +315,8 @@ class dataDisplayer:
     def openConfigDialog(self):
         inputDialog = configDialog(root, self.positionOffset)
         root.wait_window(inputDialog.top)
-        #print('Reference weight mass [g]: ', inputDialog.referenceMass)
-        # does inputDialog get cleaned up here?
-
+        for i in range(3):
+            self.positionOffset[i] = inputDialog.zeroValue[i].get()
             
 class configDialog:
     def __init__(self, parent, offsets):
@@ -327,11 +332,10 @@ class configDialog:
         for i in range(3):
             ttk.Label(self.top, text='Winch {} length [m]:'.format(i+1)).grid(row=i+1, column=0)
             e = ttk.Entry(self.top, font=default_font, justify=tk.CENTER, textvariable=self.zeroValue[i]).grid(row=i+1, column=1)
-            ttk.Button(self.top, text='Set', command=lambda: self.setLength(i)).grid(row=i+1, column=2)
         
-        ttk.Separator(self.top).grid(row=4, columnspan=3, sticky=tk.EW)
+        ttk.Separator(self.top).grid(row=4, columnspan=2, sticky=tk.EW)
         frame = tk.Frame(self.top)
-        frame.grid(row=5, column=0, columnspan=3, sticky=tk.NSEW)
+        frame.grid(row=5, column=0, columnspan=2, sticky=tk.NSEW)
 
         self.OKButton = ttk.Button(frame, text='Close', command=self.close).grid(row=0, column=0, sticky=tk.NSEW)
 
@@ -344,12 +348,7 @@ class configDialog:
         for i in range(0, self.top.grid_size()[1]):
             self.top.grid_rowconfigure(i, weight=0)
 
-    def setLength(self, winch):
-        #print(winch)
-        pass
-        
     def close(self):
-        #print(self.zeroValue[0].get())
         self.top.destroy()
         
 def to_float(x):
