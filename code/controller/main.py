@@ -35,6 +35,11 @@ winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP
 
 speedPot = machine.ADC(machine.Pin.board.D0)
 
+modeSelect = machine.Pin(machine.Pin.board.D5, machine.Pin.IN, machine.Pin.PULL_UP)
+currentMode = modeSelect.value()
+CONTROLLER = 1
+EXTENDER = 0
+
 led = machine.Pin(machine.Pin.board.D4, machine.Pin.OUT)
 ledState = False
 
@@ -46,54 +51,63 @@ stop = '0'
 up = '2'
 down = '1'
 
-xbee.receive_callback(receive_status)
+if currentMode == CONTROLLER:
+    xbee.receive_callback(receive_status)
 
 while True:
     try:
         while True:
-            # Form the message that will be sent to the receivers
-            s = ''
-            if winch1out.value() == 0: # pulled low by a switch
-                s += down
-            elif winch1in.value() == 0:
-                s += up
-            else:
-                s += stop
-        
-            if winch2out.value() == 0:
-                s += down
-            elif winch2in.value() == 0:
-                s += up
-            else:
-                s += stop
-        
-            if winch3out.value() == 0:
-                s += down
-            elif winch3in.value() == 0:
-                s += up
-            else:
-                s += stop
+            # work out if we need to change mode
+            if (modeSelect.value() == EXTENDER) and (currentMode == CONTROLLER):
+                led.value(False)
+                currentMode = EXTENDER
+                xbee.receive_callback(None)
+            elif (modeSelect.value() == CONTROLLER) and (currentMode == EXTENDER):
+                currentMode = CONTROLLER
+                xbee.receive_callback(receive_status)
 
-            # Get speed from the potentiometer
-            speed = speedPot.read()
+            if currentMode == CONTROLLER:
+                # Form the message that will be sent to the receivers
+                s = ''
+                if winch1out.value() == 0: # pulled low by a switch
+                    s += down
+                elif winch1in.value() == 0:
+                    s += up
+                else:
+                    s += stop
+            
+                if winch2out.value() == 0:
+                    s += down
+                elif winch2in.value() == 0:
+                    s += up
+                else:
+                    s += stop
+            
+                if winch3out.value() == 0:
+                    s += down
+                elif winch3in.value() == 0:
+                    s += up
+                else:
+                    s += stop
+    
+                # Get speed from the potentiometer
+                speed = speedPot.read()
 
-            # The ADC is 12 bit, but we only want 8 bits to send to the winches,
-            # so chop off the lower bits (and it removes ADC noise too)                
-            s += '{:03d}'.format(speed >> 4)
+                # The ADC is 12 bit, but we only want 8 bits to send to the winches,
+                # so chop off the lower bits (and it removes ADC noise too)                
+                s += '{:03d}'.format(speed >> 4)
+
+                # Send to whoever is listening
+                xbee.transmit(xbee.ADDR_BROADCAST, s)
             
-            #print(s)
-            
-            # Send to whoever is listening
-            xbee.transmit(xbee.ADDR_BROADCAST, s)
-            
-            # Flick the LED state every time we transmit
-            led.value(ledState)
-            ledState = not ledState
+                # Toggle the LED state every time we transmit
+                led.value(ledState)
+                ledState = not ledState
         
             # Do nothing
             utime.sleep_ms(pollInterval)
-                        
-    except:
+
+    except Exception as e:
         # Will appear on the MicroPython terminal, so useful for debugging.
-        print('Exception caught: ', sys.exc_info()[0])
+        print(str(e))
     
