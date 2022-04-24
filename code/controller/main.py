@@ -58,13 +58,14 @@ while True:
     try:
         while True:
             # work out if we need to change mode
-            if (modeSelect.value() == EXTENDER) and (currentMode == CONTROLLER):
-                led.value(False)
-                currentMode = EXTENDER
-                xbee.receive_callback(None)
-            elif (modeSelect.value() == CONTROLLER) and (currentMode == EXTENDER):
-                currentMode = CONTROLLER
-                xbee.receive_callback(receive_status)
+            if (modeSelect.value() != currentMode):
+                if currentMode == CONTROLLER:
+                    currentMode = EXTENDER
+                    led.value(False)
+                    xbee.receive_callback(None)
+                else:
+                    currentMode = CONTROLLER
+                    xbee.receive_callback(receive_status)
 
             if currentMode == CONTROLLER:
                 # Form the message that will be sent to the receivers
