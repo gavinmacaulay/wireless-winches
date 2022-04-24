@@ -330,7 +330,7 @@ class configDialog:
 
         self.top = tk.Toplevel(parent)
         for i in range(3):
-            ttk.Label(self.top, text='Winch {} length [m]:'.format(i+1)).grid(row=i+1, column=0)
+            ttk.Label(self.top, text='Winch {} offset [m]:'.format(i+1)).grid(row=i+1, column=0)
             e = ttk.Entry(self.top, font=default_font, justify=tk.CENTER, textvariable=self.zeroValue[i]).grid(row=i+1, column=1)
         
         ttk.Separator(self.top).grid(row=4, columnspan=2, sticky=tk.EW)
