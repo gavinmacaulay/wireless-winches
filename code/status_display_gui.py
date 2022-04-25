@@ -265,7 +265,7 @@ class dataDisplayer:
                     logging.info("Received: '{}'".format(line))
                     parts = line.split(',')
                     if len(parts) == 6:
-                        (winch_id, vin, xbee_temp, position, velocity, current) = parts
+                        (winch_id, vin, xbee_temp, position, velocity) = parts
                         velocity = to_float(velocity)
                         position = to_float(position)
                     

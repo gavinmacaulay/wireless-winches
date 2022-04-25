@@ -75,10 +75,6 @@ def get_status():
     vin_bytes = tic.get_variables(0x33, 2) # [mV], unsigned 16-bit
     vin = int.from_bytes(vin_bytes, 'little') / 1000
     
-    # Get current limit setting
-    current_limit_bytes = tic.get_variables(0x4a, 1) # unsigned 8bit, 40 mA steps
-    current_limit = int.from_bytes(current_limit_bytes, 'little') * 40
-    
     # Get position & velocity
     state = tic.get_variables(0x22, 8) # 2 x signed 32-bit
     
@@ -93,7 +89,7 @@ def get_status():
     if xbee_temp > 0x7FFF:
         xbee_temp = xbee_temp - 0x10000
         
-    return (vin, position, velocity, xbee_temp, current_limit)
+    return (vin, position, velocity, xbee_temp)
 
 # Config variables
 status_period = 5 # generate a status message every x recieved messages from controller
@@ -212,11 +208,11 @@ while True:
         if status_counter >= status_period:
             status_counter = 0
 
-            (vin, pos_actual, velocity_actual, t, current_limit) = get_status()
+            (vin, pos_actual, velocity_actual, t) = get_status()
             v_physical = velocity_actual * pulses_factor_speed # [m/s]
             p_physical = pos_actual * pulses_factor_position # [m]
         
-            data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, p_physical, v_physical, current_limit)
+            data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
             if len(data) > max_payload_len:
                 data = '{},error - message too long'.format(winch)
         

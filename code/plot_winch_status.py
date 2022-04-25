@@ -41,7 +41,7 @@ for l in lines:
         msg = msg[1:-1]
         parts = msg.split(',')
         if len(parts) == 6:
-            (winch_id, vin, xbee_temp, position, velocity, current) = parts
+            (winch_id, vin, xbee_temp, position, velocity) = parts
             w.append(winch_id)
             v.append(vin)
             t.append(xbee_temp)
