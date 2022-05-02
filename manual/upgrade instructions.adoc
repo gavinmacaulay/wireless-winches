@@ -20,7 +20,6 @@ https://www.aqualyd.nz
 
 The latest vesion of this manual is available on https://github.com/gavinmacaulay/wireless-winches.git[github].
 
-
 == Introduction
 
 This document explains how to upgrade the Aqualyd Wireless Calibration winches. After the upgrade the power consumption will be reduced, the input voltage tolerance will be increased to 48 V, winch status reports will be available via an Android app, the hand controller can function as a range extender, and power supply via batteries will be enabled.
