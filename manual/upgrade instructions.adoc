@@ -221,7 +221,7 @@ image::images/extender switch orientation.jpg[width=300]
 +
 . Attach the USB connector to the replacement end plate, ensuring that the slide switch on the end plate is on the right hand side when viewing the controller innards (<<end_plate>>)
 . Insert the end plate into the controller case
-. Unscrew the red Sparkfun circuit board and solder the orange wire from the slide switch into the hole marked 5 (left hand side). Take care to bring the wire in from underneath the circuit board in the same way that other wires are attached.
+. Unscrew the red Sparkfun circuit board and solder the orange wire from the slide switch into the hole marked 5 (on the right hand side). Take care to bring the wire in from underneath the circuit board in the same way that other wires are attached.
 . Remove the heatshrink from the bundle of black wires that were under the Sparkfun board and add and solder the black wire from the slide switch (<<controller_wiring_black>>)
 . Use the supplied black heat shrink to protect the newly soldered join
 . Reinstall the red circuit board, tucking the new wires securely under the Sparkfun board
