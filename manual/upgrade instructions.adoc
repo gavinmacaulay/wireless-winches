@@ -22,7 +22,7 @@ The latest vesion of this manual is available on https://github.com/gavinmacaula
 
 == Introduction
 
-This document explains how to upgrade the Aqualyd Wireless Calibration winches. After the upgrade the power consumption will be reduced, the input voltage tolerance will be increased to 48 V, winch status reports will be available via an Android app, the hand controller can function as a range extender, and power supply via batteries will be enabled.
+This document explains how to upgrade the Aqualyd Wireless Calibration winches. After the upgrade the power consumption will be reduced, the input voltage tolerance will be increased to 47 V, winch status reports will be available via an Android app, the hand controller can function as a range extender, and power supply via batteries will be enabled.
 
 The upgrade process is somewhat involved and technical. Expect to take 30-60 minutes per winch to carry out the upgrade. The skills required are:
 
