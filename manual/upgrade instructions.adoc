@@ -158,7 +158,7 @@ The remaining motor controller needs some reconfiguration to work well from batt
 
 === Upgrade winch and hand controller software
 
-The software in the motors is changed to actively reduce the power consumption of the motor and to obtain winch status information, which is sent to the hand controller. The hand controller softare is enhanced to receive this status information and to send it out via Bluetooth.
+The software in the motors is changed to actively reduce the power consumption of the motor and to obtain winch status information, which is sent to the hand controller. The hand controller software is enhanced to receive this status information and to send it out via Bluetooth.
 
 . Download and install the https://www.digi.com/resources/documentation/digidocs/90001526/tasks/t_download_and_install_xctu.htm[Digi XCTU Xbee software] onto a computer
 . Download the https://github.com/gavinmacaulay/wireless-winches/tree/main/code/winch[winch software] and https://github.com/gavinmacaulay/wireless-winches/blob/main/code/controller/main.py[controller software]. These both have the same name (`main.py`) and need to keep that name, so store them in different directories.
