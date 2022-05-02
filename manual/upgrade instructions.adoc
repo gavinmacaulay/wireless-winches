@@ -186,7 +186,7 @@ This upgrade simply adds battery brackets to the winch units. These are easily r
 
 Repeat the following for each winch unit:
 
-. Add winch power connectors to the end of battery bracket cables (<<battery_connector>>). Brown wire is positive and goes to pin 1 in the connector.
+. Add the winch power connectors that were supplied as part of the original wireless winch system to the end of battery bracket cables (<<battery_connector>>). Brown wire is positive and goes to pin 1 in the connector.
 . Clamp battery brackets to winch unit, centred between the legs of the winch tube (<<battery_bracket>>)
 . Drill 3.4 mm diameter holes at the location of the three holes in the battery bracket. The hole into the plastic should be at least 13 mm deep.
 . Tap all three holes using the M4 taps. In the aluminium tap all the way through. In the plastic, tap to at least 10 mm depth
