@@ -34,12 +34,12 @@ The upgrade process is somewhat involved and technical. Expect to take 30-60 min
 These items are supplied as part of the upgrade kit:
 
 . Sparkfun Xbee dongle + USB cable/mount
-. Motor connector wiring & heat-shrink sets (x6)
+. Motor connector wiring (plug end) & heat-shrink sets (x6)
+. Motor connector wiring (socket end) & 4-way PCB-mount screw terminals (x6)
 . Replacement controller end plate and wiring (x2)
 . Battery brackets & cables (x6)
 . M4 x 16 mm socket head machine screws (x18)
-. 4-way PCB-mount screw terminals (x6)
-. M4 taps (2) and 3.4 mm drill bit
+. M4 taps (x2) and 3.4 mm drill bit
 . Rubber for pole holder brackets (x12)
 . Small cable ties
 
@@ -82,10 +82,10 @@ Wakefield 7095
 New Zealand
 
 . Sparkfun Xbee Dongle (red circuit board with USB connector) +  USB cable/mount
-. Removed winch motor drivers & connecting cable (x6)
+. Removed winch motor driver & connecting cable (x6)
 . Removed hand controller end plate (x2)
-. Range extenders (x2), which will be upgraded to hand controllers and returned to CSIRO
-. M4 taps and 3.4 mm drill bit
+. Range extender (x2), which will be upgraded to hand controllers and returned to CSIRO
+. M4 tap (x2) and 3.4 mm drill bit
 
 == Upgrades
 
@@ -158,13 +158,13 @@ The remaining motor controller needs some reconfiguration to work well from batt
 
 === Upgrade winch and hand controller software
 
-The software in the motors is changed to actively reduce the power consumption of the motor and to obtain winch status information, which is sent to the hand controller. The hand controller software is enhanced to receive this status information and to send it out via Bluetooth.
+The software in the motors is changed to actively reduce the power consumption of the motor when stationary, and to collate winch status information and send it to the hand controller. The hand controller software is enhanced to receive this winch status information and to send it out via Bluetooth.
 
 . Download and install the https://www.digi.com/resources/documentation/digidocs/90001526/tasks/t_download_and_install_xctu.htm[Digi XCTU Xbee software] onto a computer
 . Download the https://github.com/gavinmacaulay/wireless-winches/tree/main/code/winch[winch software] and https://github.com/gavinmacaulay/wireless-winches/blob/main/code/controller/main.py[controller software]. These both have the same name (`main.py`) and need to keep that name, so store them in different directories.
 . Upgrade winch software (repeat for each winch):
 .. Insert the supplied red Sparkfun board into the USB cable mount and connect the USB to the PC
-.. Remove an Xbee circuit board from a winch
+.. Remove an Xbee circuit board from a winch - it will pull out of the socket on the underlying red PCB. Note the orientation of the Xbee board.
 .. Insert the Xbee into the Sparkfun Xbee dongle
 .. Connect to Xbee using XCTU
 ... Click on the 'Add devices' icon (top left of XCTU window), choose the appropriate USB serial port
@@ -172,7 +172,7 @@ The software in the motors is changed to actively reduce the power consumption o
 .. Open the File Manager (Tools:File System Manager) and click on the Open button
 .. Copy the winch `main.py` file to the Xbee, replacing the existing main.py file
 .. Click on the green 'Open' button to disconnect the file system manager
-.. Re-insert Xbee into winch unit
+.. Re-insert Xbee into winch unit. noting the correct orientation.
 . Upgrade Controller software (repeat for each controller):
 .. Using a USB cable, connect the controller unit to a PC
 .. Connect to the Xbee that is inside the controller using the XCTU software
