@@ -112,8 +112,9 @@ image::images/winch end wiring.jpg[width=350]
 . Take the supplied motor connector wiring (plug end) and solder onto the wires that come out of the motor. Match colours, except for green, which gets connected to yellow. Use the supplied heat shrink to protect the soldered joins
 . Secure the wires using a cable tie through the two holes drilled in the clear plastic support (<<winch_wiring>>)
 . Reinsert the motor and endcap back into the tube and tighten the endcap
-. On the electronics ring, cut off the old motor wiring/socket at the tic249 circuit board (this connector and wiring is to be returned to Aqualyd)
-. Remove the tic249 motor controller from the plastic electronics mounting ring and solder the supplied 4-way terminal block onto the tic249 PCB holes marked with A1,A2,B1, and B2
+. Remove the tic249 motor controller from the plastic electronics mounting ring
+.. Cut off the old motor wiring/socket bundle as close to the circuit boards as practical (this connector and wiring is to be returned to Aqualyd)
+.. Solder the supplied 4-way terminal block onto the tic249 PCB holes marked with A1,A2,B1, and B2
 . Connect the motor connector wiring (socket end) to the newly installed terminal block. Follow the colour order shown in <<tic_wiring>>.
 +
 [.float-group]
@@ -132,7 +133,7 @@ image::images/tic wiring complete.jpg[width=340]
 . Reinstall the tic249 motor controller into the plastic electronics mounting ring and secure the new tic249 wires using a cable tie to the existing cable bundle in the electronics mounting ring (<<tic_wires_secured>>)
 . Upgrade the software on the Xbee circuit board (do it at this stage while the winch unit is open) - see the <<_upgrade_winch_and_hand_controller_software>> section.
 . Reconfigure the motor controller - see the <<_reconfigure_motor_controller>> section
-. Reinsert the electronics mounting ring and endcap, taking care to ensure that when doing up the endcap that no wires are caught. It takes about two turns to tighen the endcap and pre-rotating the endcap can help ensure the wires are not excessive twisted when the endcap is done up
+. Connect the motor wiring plug and socket and reinsert the electronics mounting ring and endcap, taking care to ensure that when doing up the endcap that no wires are caught. It takes about two turns to tighen the endcap and pre-turning the endcap can help ensure the wires are not excessive twisted when the endcap is done up
 . Ensure the endcap is very tightly screwed on
 . Reinstall the yellow rod tube, adding a rubber sheet under each bracket (this prevents the yellow tubes from becoming lose during use)
 
