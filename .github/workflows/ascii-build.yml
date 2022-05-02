@@ -20,14 +20,17 @@ jobs:
     - name: checkout 
       uses: actions/checkout@main
 
-    - name: build User and Technical Manual.adoc
-      run: asciidoctor-pdf "User and Technical Manual.adoc"
+    - name: build manuals
+      run: |
+        asciidoctor-pdf "User and Technical Manual.adoc"
+        asciidoctor-pdf "upgrade instructions.adoc"
       working-directory: manual
     
     - name: move to generated-docs folder
       run: |
         mkdir -p generated-docs
         mv "manual/User and Technical Manual.pdf" generated-docs/
+        mv "manual/upgrade instructions.pdf" generated-docs/
         
     - name: Git stuff
       run: |
