@@ -66,6 +66,7 @@ These tools are required to carry out the upgrade:
 * Heat gun
 * Electric drill
 * Small pliers/cutters
+* Utility knife/box cutter
 * Small G-clamp
 * 10 mm ring spanner or small adjustable spanner
 * Windows computer with USB port
@@ -135,11 +136,11 @@ image::images/tic wiring complete.jpg[width=340]
 . Reconfigure the motor controller - see the <<_reconfigure_motor_controller>> section
 . Connect the motor wiring plug and socket and reinsert the electronics mounting ring and endcap, taking care to ensure that when doing up the endcap that no wires are caught. It takes about two turns to tighen the endcap and pre-turning the endcap can help ensure the wires are not excessive twisted when the endcap is done up
 . Ensure the endcap is very tightly screwed on
-. Reinstall the yellow rod tube, adding a rubber sheet under each bracket (this prevents the yellow tubes from becoming lose during use)
+. Reinstall the yellow rod tube, adding a rubber sheet under each bracket (this prevents the yellow tubes from becoming loose during use)
 
 === Reconfigure motor controller
 
-The remaining motor controller needs some reconfiguration to work well from batteries.
+The remaining motor controller needs some reconfiguration to work without the removed motor controller and to reduce power consumption.
 
 . Download and install the https://www.pololu.com/file/0J1325/pololu-tic-1.8.2-win.msi[Pololu Tic Control Center] software.
 . Start the Pololu Tic software
@@ -156,6 +157,7 @@ The remaining motor controller needs some reconfiguration to work well from batt
 ... `AGC Bottom current limit` to 45%
 ... `AGC current boost steps` to 5
 ... `AGC frequency limit` to Off
+.. Disconnect the USB cable from the tic249 board.
 
 === Upgrade winch and hand controller software
 
