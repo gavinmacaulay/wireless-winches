@@ -10,6 +10,7 @@ import os
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import pandas as pd
 from datetime import datetime
 
@@ -40,7 +41,7 @@ for l in lines:
         msg = m[0]
         msg = msg[1:-1]
         parts = msg.split(',')
-        if len(parts) == 6:
+        if len(parts) == 5:
             (winch_id, vin, xbee_temp, position, velocity) = parts
             w.append(winch_id)
             v.append(vin)
@@ -57,10 +58,11 @@ winches = np.sort(df['id'].unique())
 for w in winches:
     w_df = df[df['id'] == w]
     w_df[['Vin', 'Temperature', 'timestamp']].plot(x='timestamp')
-    w_df = w_df.set_index('timestamp')
+    w_df = w_df.set_index('Time of day')
     
     plt.plot(w_df['Temperature'].rolling('2min').mean(), 'grey')
     plt.plot(w_df['Vin'].rolling('2min').mean(), 'grey')
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     plt.title(f'Winch {w:.0f}')
     plt.grid()
 
