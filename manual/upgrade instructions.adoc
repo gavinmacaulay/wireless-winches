@@ -14,9 +14,10 @@
 
 [colophon]
 
-(C) 2022 Aqualyd Limited +
+(C) 2022 Aqualyd Limited, https://www.aqualyd.nz
 
-https://www.aqualyd.nz
+
+This was document last built at {localdatetime} 
 
 The latest vesion of this manual is available on https://github.com/gavinmacaulay/wireless-winches.git[github].
 
