@@ -13,11 +13,8 @@ def receive_status(m):
     else:
         # pull out the message from the received data
         status = m['payload'].decode('ascii')
-        
-    # goes out on the UART
-    print(status)
-    
-    # and out on Bluetooth
+   
+    # and send out on Bluetooth
     try:
         relay.send(relay.BLUETOOTH, status)
     except:
