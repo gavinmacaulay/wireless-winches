@@ -1,7 +1,7 @@
 = Wireless echosounder calibration winch manual
 :author: Aqualyd Limited
 :email: gavin@aqualyd.nz
-:revnumber: v1.0
+:revnumber: v1.1
 :revdata: February 2022
 :sectnums!:
 :doctype: book
