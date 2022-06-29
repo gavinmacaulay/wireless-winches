@@ -58,7 +58,7 @@ winches = np.sort(df['id'].unique())
 for w in winches:
     w_df = df[df['id'] == w]
     w_df[['Vin', 'Temperature', 'timestamp']].plot(x='timestamp')
-    w_df = w_df.set_index('Time of day')
+    w_df = w_df.set_index('timestamp')
     
     plt.plot(w_df['Temperature'].rolling('2min').mean(), 'grey')
     plt.plot(w_df['Vin'].rolling('2min').mean(), 'grey')

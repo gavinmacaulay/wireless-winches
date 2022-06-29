@@ -38,7 +38,7 @@ def main():
     setupLogging(logdir, 'Winches')
     
     # Serial port to listen to.
-    xbeeCOMport = 'COM6'
+    xbeeCOMport = 'COM13'
 
     # logging.info('Finding COM ports.')
     # comports = serial.tools.list_ports.comports()
