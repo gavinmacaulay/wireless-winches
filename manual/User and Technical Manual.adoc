@@ -31,13 +31,7 @@ This is the User Manual for the Aqualyd wireless echosounder calibration winch s
 
 === Supply of power
 
-The winch units each require a user-supplied 36 V DC power supply. The winch units have a water-resistant bulkhead connector for supply of the power and a matching cable connector is provided with each winch. It is the user's responsibility to source and connect a suitable 36 V DC power supply to each winch. 
-
-Pin 1 in the connector should be connected to the positive of the DC supply and pin 3 to the negative of the DC supply (there is no pin 2) (see <<Schematics>> for schematics). The supplied connector can accomodate a cable with external diameter between 4 and 8 mm. 
-
-Normal operation peak current is generally less than 0.7 A. The current used to hold a 3 kg load is generally less than 0.1 A. To ensure voltage stability during winch operations and allow for startup currents, the power supply system should be capable of supplying at least 1.5 A.
-
-The winches will operate with an input voltage between 10 and 40 V, but require about 36 V to hold the rated weight. Exceeding 40 V will damage the winch electronics. 
+The winch units each require a user-supplied Hikoki MultiVolt 36 V DC battery. It is suggested that four or more such batteries are used for each calibration set so that a spare battery is always available and can be charging while using the system.
 
 === Installation of line on the reels
 
@@ -81,7 +75,9 @@ WARNING: When extending the telescopic poles do not extend each section beyond t
 
 NOTE: The winches will rotate relatively freely until power is applied to the winches, after which the only way to rotate the winches is by using the hand controller.
 
-The hand controller and winches automatically form a wireless mesh network that relays commands from the hand controller to the winches even if all winches are not reachable directly from the hand controller. The range extender can be used to bridge a gap in this network. Multiple range extenders can be used if necessary.
+The hand controller and winches automatically form a wireless mesh network that relays commands from the hand controller to the winches even if all winches are not reachable directly from the hand controller. 
+
+The hand controller can function as a range extender - to activate this mode, move the switch next to the USB charging port on the end of the hand controller. Multiple range extenders can be used if necessary. When in range extender mode, none of the winch controls on the controller are operational.
 
 === Controlling the winches
 
@@ -93,9 +89,19 @@ The in/out switches are configured to pay out line when the inner side of the sw
 
 NOTE: It is easy to operate the winches without observing the winch and this can quickly cause unintentional damage to the winches or the poles (e.g., pulling a line too hard when the line is caught on the hull, paying out line when there is no tension on the line leading to tangles). Experience suggests that until the sphere is visible on the echosounder split-beam display, all operation of the winches should be done while observing the winch/pole unit.
 
+=== Android app
+
+The Winch Status Android app is available on the Google Play Store. It requires an Android device running version 9 of Android or later that supports Bluetooth. 
+
+The app shows information about the winches, including line out, line speed, battery voltage, and internal winch temperature (<<android_app>>)). The app receives this information from the hand controller using Bluetooth. 
+
+.Screenshot from the Android app.
+[[android_app]]
+image::images/android_app_screenshot.png[scaledwidth=6cm,align="center"]
+
 === Charging the batteries 
 
-The hand controller and range extender contain rechargable batteries. To charge these, connect the supplied USB cable to the unit and to a USB power supply (the USB port on a computer is fine) and _turn the unit on_. 
+The hand controller contains rechargable batteries. To charge this, connect the supplied USB cable to the unit and to a USB power supply (the USB port on a computer is fine) and _turn the unit on_. 
 
 Charging a completely flat battery will take about 4 hours - no harm will occur to the battery if it is connected to the charger for longer than this. A fully charged battery will power a unit for about 40 hours.
 
@@ -113,16 +119,15 @@ After each use of the system:
 - wash down the winches and poles in freshwater
 - separate out the telescopic parts of the poles and allow any internal water to dry before reassembling
 
-
 = Technical Manual
 
 This is the Technical Manual for the Aqualyd wireless echosounder calibration winch system. This section provides details on how the system works, the main components, and information to assist with repair and modifications of the system.
 
 == System description
 
-The overall system consists of a hand controller, three winches, and an optional range extender. Communication between these units occurs via a 2.4 GHz mesh network, provided by Digi XBee3 radio modules. The hand controller broadcasts a message at 5 Hz that contains the state of all three in/out switches (up, down, stationary) and the potentiometer (0-255). Each winch unit listens to these messages, picks out the relevant in/out switch state and sends speed and direction commands to the motor controller, which operates the stepper model to rotate the winch drum. The relationship between the speed setting on the hand controller and the actual motor speed is determined by calculations done by the code running in the winch unit. There is no communication from the winches to the hand controller.
+The overall system consists of a hand controller, three winches, and an optional range extender. Communication between these units occurs via a 2.4 GHz mesh network, provided by Digi XBee3 radio modules. The hand controller broadcasts a message at 10 Hz that contains the state of all three in/out switches (up, down, stationary) and the potentiometer (0-255). Each winch unit listens to these messages, picks out the relevant in/out switch state and sends speed and direction commands to the motor controller, which operates the stepper model to rotate the winch drum. The relationship between the speed setting on the hand controller and the actual motor speed is determined by calculations done by the code running in the winch unit. At every 5th broadcast, each winch replies with winch status information which the hand controller sends via bluetooth to an Android app.
 
-The system is provided in two parts: 1) a transit/storage case that contains the hand controller, range extender and three winch units, and 2) a pipe that contains three telescopic poles (<<whole_system>>). 
+The system is provided in two parts: 1) a transit/storage case that contains the hand controllers and three winch units, and 2) a pipe that contains three telescopic poles (<<whole_system>>). 
 
 .Supplied winch system showing (left) the transit case with included winches and controllers, and (right) the transit case and pole tube.
 [[whole_system]]
@@ -130,18 +135,17 @@ image::images/wholeSystem.svg[scaledwidth=18cm,float=right]
 
 === Winches
 
-The motors are of NEMA 23 size, supplied by StepperOnline (model 23HS30-2804S-PG4), driven by a StepperOnline ISD04 motor controller. The motor is integrated with a 4.25:1 planetary gearbox. The controller is driven using the STEP/DIR output from a Pololu Tic T246 motor controller which in turn is controlled via a serial link to a microPython programm running on the XBee3 radio module in each winch unit.
+The motors are of NEMA 23 size with an integrated 4.25:1 planetary gearbox, supplied by StepperOnline (model 23HS30-2804S-PG4). The motor is driven from a Pololu Tic T246 motor controller which is controlled via serial communication with a microPython programm running on the XBee3 radio module in each winch unit.
 
-The acceleration and decceleration applied when the motor speed is changed is determined by a programmable setting in the Tic T246, as well as the maximum motor speed, and command timeout when no hand controller messages are received. The StepperOnline motor controller is configured for 1/4 microstepping.
+The acceleration and decceleration applied when the motor speed is changed is determined by a programmable setting in the Tic T246, as well as the maximum motor speed, and command timeout when no hand controller messages are received. 
 
 The winches were designed to hold a 6 kg load and are able to lift and lower 6 kg at slow speeds. Operation at higher speeds is only possible with smaller loads. The winch units operate with a 10-40 V DC input, but 36 V is needed to achieve sufficient motor torque to hold a 6 kg line load. 
 
-
-=== Hand controller and range extender
+=== Hand controller
 
 The hand controller contains a Digi XBee3 radio module, switches, a potentiometer, and rechargable battery. The XBee3 is integrated in a SparkFun Thing Plus XBee3 board (P/N WRL-15454) which provides power to the XBee3 via USB or a Lithium-Polymer battery. Battery management circuitry is also included that will charge the battery when USB power is provided.
 
-The range extender is the same as the hand controller but without the switches and potentiometer and does not run a microPython program - the range extension functionality is part of the XBee3 firmware.
+A switch on the hand controller sets whether the hand controller operates as a controller or as a range extender. In range extender mode the unit sends no control messages to the winches.
 
 === Software
 
@@ -191,12 +195,13 @@ tbc
 |Winch supply voltage for design performance|36|V DC
 |||
 |Current usage at 6 kg load, 0.02 m/s|<0.1|A
-|Peak current usage at 3 kg load, 0.5 m/s|0.7|A
+|Peak current usage at 3 kg load, 0.5 m/s|0.07|A
 |Recommended minimum current rating of power supply|1.5|A
 |Maximum current usage based on motor specs|3.4|A
 |||
 |Wireless communication protocol|XBee DigiMesh|
 |DigiMesh network identification|0xA1A1|
+|DigiMesh network channel|0x1A|
 |DigiMesh wireless channel|26 (2480 MHz)|
 |||
 |Hand controller/range extender battery|Nokia BL-5C|
@@ -218,20 +223,15 @@ A wireless system consists of the following components:
 |Case foam (upper tray)|1
 |Winch unit (short pole)|2
 |Winch unit (long pole)|1
-|Hand controller|1
-|Range extender|1
+|Hand controller|2
 |Pole transit/storage pipe|1
 |Short pole|2
 |Long pole|1
 |Pole attachment cord|3
 |Pole attachment eyebolt|3
-|Power supply connector|3
-|Power supply connector cover|3
-|Winch power socket cover|3
 |Charging cord (USB)|1
 |User & Technical manual|1
 |Hose clamps (46-70 mm diameter)|6
-|G-clamps (not supplied)|6
 |===
 
 [appendix]
@@ -239,9 +239,9 @@ A wireless system consists of the following components:
 
 .Wiring schematic for the winch unit.
 [[winch_schematic]]
-image::schematics/winchBox.svg[]
+image::schematics/winch box.svg[]
 
 .Wiring schematic for the hand controller and range extender
 [[controller_schematics]]
-image::schematics/controllerLayout.svg[]
+image::schematics/controller layout.svg[]
 
