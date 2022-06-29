@@ -1,6 +1,6 @@
-update=7/02/2022 11:31:28 am
+update=29/06/2022 3:25:38 pm
 version=1
-last_client=eeschema
+last_client=kicad
 [general]
 version=1
 RootSch=

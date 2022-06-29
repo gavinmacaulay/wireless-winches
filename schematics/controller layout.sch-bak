@@ -216,10 +216,6 @@ Wire Notes Line
 	5050 2000 3800 2000
 Text Notes 3900 2100 0    50   ~ 0
 Sparkfun Thing Plus Xbee3
-Text Notes 10650 7650 0    50   ~ 0
-1.1
-Text Notes 8150 7650 0    50   ~ 0
-23/08/20201
 Wire Wire Line
 	1700 5350 1700 2450
 Wire Wire Line
