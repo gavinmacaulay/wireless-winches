@@ -34,7 +34,6 @@ jobs:
         
     - name: Git stuff
       run: |
-        pwd
         git config --global --add safe.directory $PWD
         git config --local user.email "gavin@aqualyd.nz"
         git config --local user.name "aqualyd-github-bot"
