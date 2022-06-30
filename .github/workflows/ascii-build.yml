@@ -35,7 +35,7 @@ jobs:
     - name: Git stuff
       run: |
         pwd
-        git config --global --add safe.directory /__w/wireless-winches/wireless-winches
+        git config --global --add safe.directory *
         git config --local user.email "gavin@aqualyd.nz"
         git config --local user.name "aqualyd-github-bot"
         git status
