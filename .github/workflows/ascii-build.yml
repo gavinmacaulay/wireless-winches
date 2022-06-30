@@ -18,7 +18,7 @@ jobs:
       run: gem install asciidoctor-pdf
       
     - name: checkout 
-      uses: actions/checkout@main
+      uses: actions/checkout@v2
 
     - name: build manuals
       run: |
