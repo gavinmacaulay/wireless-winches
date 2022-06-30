@@ -34,7 +34,7 @@ jobs:
         
     - name: Git stuff
       run: |
-        git config --global --add safe.directory "*"
+        git config --global --add safe.directory '*'
         git status
         git add "generated-docs/User and Technical Manual.pdf"
         git add "generated-docs/upgrade instructions.pdf"
