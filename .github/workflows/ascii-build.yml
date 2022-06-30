@@ -34,7 +34,7 @@ jobs:
         
     - name: Git stuff
       run: |
-        git config --global --add safe.directory '*'
+        git config --global --add safe.directory /__w/wireless-winches/wireless-winches
         git status
         git add "generated-docs/User and Technical Manual.pdf"
         git add "generated-docs/upgrade instructions.pdf"
