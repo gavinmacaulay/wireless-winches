@@ -34,8 +34,8 @@ jobs:
         
     - name: Git stuff
       run: |
-        git config --local user.email "gavin@aqualyd.nz"
-        git config --local user.name "aqualyd-github-bot"
+        git config user.email "gavin@aqualyd.nz"
+        git config user.name "aqualyd-github-bot"
         git status
         git add "generated-docs/User and Technical Manual.pdf"
         git add "generated-docs/upgrade instructions.pdf"
