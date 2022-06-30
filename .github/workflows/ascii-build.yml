@@ -18,7 +18,7 @@ jobs:
       run: gem install asciidoctor-pdf
       
     - name: checkout 
-      uses: actions/checkout@v2
+      uses: actions/checkout@main
 
     - name: build manuals
       run: |
@@ -34,6 +34,7 @@ jobs:
         
     - name: Git stuff
       run: |
+        pwd
         git config --global --add safe.directory /__w/wireless-winches/wireless-winches
         git config --local user.email "gavin@aqualyd.nz"
         git config --local user.name "aqualyd-github-bot"
