@@ -31,11 +31,11 @@ This is the User Manual for the Aqualyd wireless echosounder calibration winch s
 
 === Supply of power
 
-The winch units each require a user-supplied Hikoki MultiVolt 36 V DC battery. It is suggested that four or more such batteries are used for each calibration set so that a spare battery is always available and can be charging while using the system.
+The winch units each require a user-supplied Hikoki MultiVolt 36 V DC battery (and charger). It is suggested that four or more such batteries are part of each calibration set so that a spare battery is always available and can be charging while using the system.
 
 === Installation of line on the reels
 
-Line should be added to the reels so that the free end leaves from the underneath of the drum when viewing the unit with the yellow tube to your right. If the direction of the winches does not match the arrows on the hand controller, it is most likely that the line has been wound on the wrong way.
+Line should be added to the reels so that the free end leaves from underneath the drum (and away from you) when viewing the unit with the yellow tube to your right. If the direction of the winches does not match the arrows on the hand controller, it is most likely that the line has been wound on the wrong way.
 
 == Operating the system
 
