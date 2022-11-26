@@ -1,8 +1,8 @@
 = Wireless echosounder calibration winch manual
 :author: Aqualyd Limited
 :email: gavin@aqualyd.nz
-:revnumber: 1.1
-:revdata: February 2022
+:revnumber: 1.2
+:revdata: November 2022
 :sectnums!:
 :doctype: book
 :toc:
@@ -48,9 +48,9 @@ Each winch/pole unit is assembled by:
 3. Aligning the holes in the yellow tube and pole and inserting the locking pin (the pole will extend about 200 mm inboard from the yellow tube),
 4. Inserting the supplied eye-bolt into the hole in the onboard end of the pole ,
 5. Attaching a tie-down cord to each eye-bolt using the attached carabiner,
-6. Lead the winch line through the eye-bolt on the outboard end of the pole,
-7. Secure the assembled units to the vessel,
-8. Connect power.
+6. Insert a battery into the winch unit
+7. Pay out line and lead it through the eye-bolt on the outboard end of the pole,
+8. Secure the assembled unit to the vessel,
 
 The winch units are designed to be attached to a pipe or plate railing on a vessel (<<assembled_installed_winch_unit>>):
 
