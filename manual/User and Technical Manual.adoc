@@ -73,7 +73,7 @@ image::images/handControllerAnnotated.svg[scaledwidth=8cm,align="center"]
 
 WARNING: When extending the telescopic poles do not extend each section beyond the red band and ensure that each pole clip is closed after extending.
 
-NOTE: The winches will rotate relatively freely until power is applied to the winches, after which the only way to rotate the winches is by using the hand controller.
+NOTE: Avoid rotating the winches by hand - instead, insert the battery and use the hand controller.
 
 The hand controller and winches automatically form a wireless mesh network that relays commands from the hand controller to the winches even if all winches are not reachable directly from the hand controller. 
 
@@ -115,9 +115,10 @@ WARNING: Charging will only occur when the on/off switch on the hand controller 
 
 After each use of the system:
 
-- charge the batteries in the hand controller and range extender.
-- wash down the winches and poles in freshwater
+- gently wash down the winches and poles in freshwater
 - separate out the telescopic parts of the poles and allow any internal water to dry before reassembling
+
+NOTE: The winch batteries are best stored in a partially discharged state. It is recommended that the batteries are charged prior to a calibration rather than immediately after a calibration.
 
 = Technical Manual
 
@@ -127,7 +128,7 @@ This is the Technical Manual for the Aqualyd wireless echosounder calibration wi
 
 The overall system consists of a hand controller, three winches, and an optional range extender. Communication between these units occurs via a 2.4 GHz mesh network, provided by Digi XBee3 radio modules. The hand controller broadcasts a message at 10 Hz that contains the state of all three in/out switches (up, down, stationary) and the potentiometer (0-255). Each winch unit listens to these messages, picks out the relevant in/out switch state and sends speed and direction commands to the motor controller, which operates the stepper model to rotate the winch drum. The relationship between the speed setting on the hand controller and the actual motor speed is determined by calculations done by the code running in the winch unit. At every 5th broadcast, each winch replies with winch status information which the hand controller sends via bluetooth to an Android app.
 
-The system is provided in two parts: 1) a transit/storage case that contains the hand controllers and three winch units, and 2) a pipe that contains three telescopic poles (<<whole_system>>). 
+The system is provided in two parts: 1) a transit/storage case that contains the hand controllers and three winch units, and 2) a tube that contains three telescopic poles (<<whole_system>>). 
 
 .Supplied winch system showing (left) the transit case with included winches and controllers, and (right) the transit case and pole tube.
 [[whole_system]]
