@@ -91,9 +91,9 @@ NOTE: It is easy to operate the winches without observing the winch and this can
 
 === Android app
 
-The Winch Status Android app is available on the Google Play Store. It requires an Android device running version 9 of Android or later that supports Bluetooth. 
+An app is available on the Google Play Store under the name ``"Aqualyd Winch Status"`` (include the quote marks when searching) or via https://play.google.com/store/apps/details?id=nz.aqualyd.winchStatus. The app requires an Android device running version 9 of Android or later that supports Bluetooth. 
 
-The app shows information about the winches, including line out, line speed, battery voltage, and internal winch temperature (<<android_app>>)). The app receives this information from the hand controller using Bluetooth. 
+The app shows information about the winches, including line out, line speed, battery voltage, and internal winch temperature (<<android_app>>). The app does not provide a way to control the winches. 
 
 .Screenshot from the Android app.
 [[android_app]]
