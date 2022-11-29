@@ -97,7 +97,7 @@ The app shows information about the winches, including line out, line speed, bat
 
 .Screenshot from the Android app.
 [[android_app]]
-image::images/android_app_screenshot.png[scaledwidth=6cm,align="center"]
+image::images/app_white_screenshot.png[scaledwidth=6cm,align="center"]
 
 === Charging the batteries 
 
