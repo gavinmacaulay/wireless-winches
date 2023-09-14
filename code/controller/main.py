@@ -20,17 +20,36 @@ def receive_status(m):
     except:
         pass
 
+# Send on Bluetooth the voltage of the battery in the controller
+def send_self_voltage(v):
+    try:
+        relay.send(relay.BLUETOOTH, '0,{:0.1f}'.format(controller,v))
+    except:
+        pass
+
+# Which version of the controller hardware
+hardwareVersion = 1 # original manually wired controller
+hardwareVersion = 2 # controller with PCB
+
 # Pin definitions
 winch1out = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
 winch1in = machine.Pin(machine.Pin.board.D12, machine.Pin.IN, machine.Pin.PULL_UP)
 
-winch2out = machine.Pin(machine.Pin.board.D1, machine.Pin.IN, machine.Pin.PULL_UP) # D18
-winch2in = machine.Pin(machine.Pin.board.D11, machine.Pin.IN, machine.Pin.PULL_UP) # D16
+if hardwareVersion == 1:
+    winch2out = machine.Pin(machine.Pin.board.D1, machine.Pin.IN, machine.Pin.PULL_UP)
+    winch2in = machine.Pin(machine.Pin.board.D11, machine.Pin.IN, machine.Pin.PULL_UP)
+else:
+    winch2out = machine.Pin(machine.Pin.board.D7, machine.Pin.IN, machine.Pin.PULL_UP)
+    winch2in = machine.Pin(machine.Pin.board.D9, machine.Pin.IN, machine.Pin.PULL_UP)
 
 winch3out = machine.Pin(machine.Pin.board.D2, machine.Pin.IN, machine.Pin.PULL_UP)
 winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
 
 speedPot = machine.ADC(machine.Pin.board.D0)
+
+if hardwareVersion == 2:
+    batteryADC = machine.ADC(machine.Pin.board.D1)
+bVolt = 0.0 # default battery voltage value
 
 modeSelect = machine.Pin(machine.Pin.board.D5, machine.Pin.IN, machine.Pin.PULL_UP)
 currentMode = modeSelect.value()
@@ -43,6 +62,10 @@ ledState = False
 # Time between checking controls (also the time between sending messages to the winches)
 pollInterval = 100 # [ms] 
 
+# How often to measure and send the controller battery voltage
+batteryInterval = 5 # times through the pollInternal loop
+batteryCount = 0
+
 # Codes that are sent to the receivers
 stop = '0'
 up = '2'
@@ -54,6 +77,14 @@ if currentMode == CONTROLLER:
 while True:
     try:
         while True:
+            # Measure battery voltage
+            if hardwareVersion == 2: 
+                batteryCount += 1
+                if batteryCount >= batteryInterval:            
+                    batteryCount = 0
+                    bVolt = batteryADC.read() * 3300 / 4.095 # [V]
+                    send_self_voltage(bVolt)
+            
             # work out if we need to change mode
             if (modeSelect.value() != currentMode):
                 if currentMode == CONTROLLER:
