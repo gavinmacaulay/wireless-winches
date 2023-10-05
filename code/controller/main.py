@@ -23,13 +23,20 @@ def receive_status(m):
 # Send on Bluetooth the voltage of the battery in the controller
 def send_self_voltage(v):
     try:
-        relay.send(relay.BLUETOOTH, '0,{:0.1f}'.format(controller,v))
+        # Fairly crude estimation of percent charge in battery
+        percent = 123 - 123/pow((1 + pow(v/3.7,80)), 0.165)
+        
+        relay.send(relay.BLUETOOTH, '0,{:0.1f},{:0.1f}'.format(v,percent))
     except:
         pass
 
 # Which version of the controller hardware
 hardwareVersion = 1 # original manually wired controller
 hardwareVersion = 2 # controller with PCB
+# detect version 2 with
+# if value() == 0, then version 2 (cause it is shorted to gnd)
+# if value() == 1, then version 1 (cause it is not connected)
+#machine.Pin(machine.Pin.board.D17, machine.Pin.IN, machine.Pin.PULL_UP)
 
 # Pin definitions
 winch1out = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -42,8 +49,20 @@ else:
     winch2out = machine.Pin(machine.Pin.board.D7, machine.Pin.IN, machine.Pin.PULL_UP)
     winch2in = machine.Pin(machine.Pin.board.D9, machine.Pin.IN, machine.Pin.PULL_UP)
 
+# for non-PCB and PCB v1.0
 winch3out = machine.Pin(machine.Pin.board.D2, machine.Pin.IN, machine.Pin.PULL_UP)
 winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
+
+# For PCB version 1.1
+# winch 3
+# winch3out = machine.Pin(machine.Pin.board.D16, machine.Pin.IN, machine.Pin.PULL_UP)
+# winch3in = machine.Pin(machine.Pin.board.D18, machine.Pin.IN, machine.Pin.PULL_UP)
+# 
+# status led
+# led_red = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT)
+# led_green = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT)
+# led_red.value(0) # turn off
+# led_green.value(0) # turn off
 
 speedPot = machine.ADC(machine.Pin.board.D0)
 
@@ -82,7 +101,9 @@ while True:
                 batteryCount += 1
                 if batteryCount >= batteryInterval:            
                     batteryCount = 0
-                    bVolt = batteryADC.read() * 3300 / 4.095 # [V]
+                    # 4095 scales the ADC, 3.3 is the ref voltage, 
+                    # and 2 compensates for the voltage divider on the PCB
+                    bVolt = batteryADC.read() / 4095 * 3.300 * 2 # [V]
                     send_self_voltage(bVolt)
             
             # work out if we need to change mode
