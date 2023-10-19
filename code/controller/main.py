@@ -5,6 +5,52 @@ import utime
 import xbee
 import sys
 from xbee import relay
+from max17048 import max17048
+
+# Configurations
+
+# Time between checking controls (also the time between sending messages to the winches)
+pollInterval = 100 # [ms] 
+
+# How often to toggle the status LED
+statusToggleRate = 10 # every nth time through the main loop
+statusToggleCount = 0
+
+# How often to measure and send the controller battery voltage
+batteryInterval = 50 # times through the pollInternal loop
+batteryCount = 0
+
+# Codes that are sent to the receivers
+stop = '0'
+up = '2'
+down = '1'
+
+# Mode switch states
+CONTROLLER = 1
+EXTENDER = 0
+
+# 1 == manually wired controller, 2 == PCB v1.2 
+hardwareVersion = 2
+
+# default battery voltage value
+bVolt = 0.0 # [V]
+
+# This xbee's node identifier
+ident = xbee.atcmd('NI')
+
+# Status leds. These only exist on the PCB version.
+# Do these early cause default states of the pin can cause unwanted
+# operation of the leds
+ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT)
+ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT)
+ledRed.off()
+ledGreen.off()
+
+# Battery monitoring
+try:
+    battery = max17048()
+except:
+    battery = None
 
 # callback for when data is received from the winches
 def receive_status(m):
@@ -20,75 +66,66 @@ def receive_status(m):
     except:
         pass
 
-# Send on Bluetooth the voltage of the battery in the controller
-def send_self_voltage(v):
+# Send on Bluetooth the state of the battery in the controller
+def send_self_battery(ident, mode, v, soc):
     try:
-        # Fairly crude estimation of percent charge in battery
-        percent = 123 - 123/pow((1 + pow(v/3.7,80)), 0.165)
-        
-        relay.send(relay.BLUETOOTH, '0,{:0.1f},{:0.1f}'.format(v,percent))
+        relay.send(relay.BLUETOOTH, '0,{},{},{:0.2f},{:0.1f}'.format(ident,mode,v,soc))
     except:
         pass
 
-# Which version of the controller hardware
-hardwareVersion = 1 # original manually wired controller
-hardwareVersion = 2 # controller with PCB
-# detect version 2 with
-# if value() == 0, then version 2 (cause it is shorted to gnd)
-# if value() == 1, then version 1 (cause it is not connected)
-#machine.Pin(machine.Pin.board.D17, machine.Pin.IN, machine.Pin.PULL_UP)
+# Set the status LED to indicate the operation mode
+def setStatusLED(mode):
+    
+    if mode == CONTROLLER:
+        ledGreen.on()
+        ledRed.off()
+    elif mode == EXTENDER:
+        ledGreen.off()
+        ledRed.on()
 
-# Pin definitions
+# Used to flash the leds on and off
+def flashStatusLED(mode, state):
+
+    if mode == CONTROLLER:
+        ledGreen.value(state)
+        
+    if mode == EXTENDER:
+        ledRed.value(state)
+
+# Disable pins that aren't used.
+machine.Pin(machine.Pin.board.D16, mode=machine.Pin.DISABLED)
+machine.Pin(machine.Pin.board.D17, mode=machine.Pin.DISABLED)
+machine.Pin(machine.Pin.board.D18, mode=machine.Pin.DISABLED)
+
+# Mode select switch
+modeSelect = machine.Pin(machine.Pin.board.D5, machine.Pin.IN, machine.Pin.PULL_UP)
+
+# And set LEDs to reflect this value
+currentMode = modeSelect.value()
+setStatusLED(currentMode)
+
+# The speed potentiometer
+speedPot = machine.ADC(machine.Pin.board.D0)
+
+# Pin definitions for the winches
 winch1out = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
 winch1in = machine.Pin(machine.Pin.board.D12, machine.Pin.IN, machine.Pin.PULL_UP)
 
 if hardwareVersion == 1:
     winch2out = machine.Pin(machine.Pin.board.D1, machine.Pin.IN, machine.Pin.PULL_UP)
     winch2in = machine.Pin(machine.Pin.board.D11, machine.Pin.IN, machine.Pin.PULL_UP)
+    winch3out = machine.Pin(machine.Pin.board.D2, machine.Pin.IN, machine.Pin.PULL_UP)
+    winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
 else:
     winch2out = machine.Pin(machine.Pin.board.D7, machine.Pin.IN, machine.Pin.PULL_UP)
     winch2in = machine.Pin(machine.Pin.board.D9, machine.Pin.IN, machine.Pin.PULL_UP)
-
-# for non-PCB and PCB v1.0
-winch3out = machine.Pin(machine.Pin.board.D2, machine.Pin.IN, machine.Pin.PULL_UP)
-winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
-
-# For PCB version 1.1
-# winch 3
-# winch3out = machine.Pin(machine.Pin.board.D16, machine.Pin.IN, machine.Pin.PULL_UP)
-# winch3in = machine.Pin(machine.Pin.board.D18, machine.Pin.IN, machine.Pin.PULL_UP)
-# 
-# status led
-# led_red = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT)
-# led_green = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT)
-# led_red.value(0) # turn off
-# led_green.value(0) # turn off
-
-speedPot = machine.ADC(machine.Pin.board.D0)
-
-if hardwareVersion == 2:
-    batteryADC = machine.ADC(machine.Pin.board.D1)
-bVolt = 0.0 # default battery voltage value
-
-modeSelect = machine.Pin(machine.Pin.board.D5, machine.Pin.IN, machine.Pin.PULL_UP)
-currentMode = modeSelect.value()
-CONTROLLER = 1
-EXTENDER = 0
-
-led = machine.Pin(machine.Pin.board.D4, machine.Pin.OUT)
-ledState = False
-
-# Time between checking controls (also the time between sending messages to the winches)
-pollInterval = 100 # [ms] 
-
-# How often to measure and send the controller battery voltage
-batteryInterval = 5 # times through the pollInternal loop
-batteryCount = 0
-
-# Codes that are sent to the receivers
-stop = '0'
-up = '2'
-down = '1'
+    winch3out = machine.Pin(machine.Pin.board.D4, machine.Pin.IN, machine.Pin.PULL_UP)
+    winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
+    
+    # and set unused pins to disabled
+    machine.Pin(machine.Pin.board.D2, mode=machine.Pin.DISABLED)
+    #machine.Pin(machine.Pin.board.D1, mode=machine.Pin.ALT, pull=machine.Pin.PULL_UP, alt=65)
+    #machine.Pin(machine.Pin.board.D11, mode=machine.Pin.ALT, pull=machine.Pin.PULL_UP, alt=75)
 
 if currentMode == CONTROLLER:
     xbee.receive_callback(receive_status)
@@ -101,20 +138,24 @@ while True:
                 batteryCount += 1
                 if batteryCount >= batteryInterval:            
                     batteryCount = 0
-                    # 4095 scales the ADC, 3.3 is the ref voltage, 
-                    # and 2 compensates for the voltage divider on the PCB
-                    bVolt = batteryADC.read() / 4095 * 3.300 * 2 # [V]
-                    send_self_voltage(bVolt)
+                    if battery != None:
+                        bVolt = battery.getVCell() # [V]
+                        bSOC = battery.getSOC() # [%]
+                    else:
+                        bVolt = 0.0
+                        bSOC = 0.0
+                    send_self_battery(ident, currentMode, bVolt, bSOC)
             
             # work out if we need to change mode
             if (modeSelect.value() != currentMode):
                 if currentMode == CONTROLLER:
                     currentMode = EXTENDER
-                    led.value(False)
                     xbee.receive_callback(None)
                 else:
                     currentMode = CONTROLLER
                     xbee.receive_callback(receive_status)
+                    
+                setStatusLED(currentMode)
 
             if currentMode == CONTROLLER:
                 # Form the message that will be sent to the receivers
@@ -143,19 +184,21 @@ while True:
                 # Get speed from the potentiometer
                 speed = speedPot.read()
 
-                # The ADC is 12 bit, but we only want 8 bits to send to the winches,
+                # The speed ADC is 12 bit, but we only want 8 bits to send to the winches,
                 # so chop off the lower bits (and it removes ADC noise too)                
                 s += '{:03d}'.format(speed >> 4)
 
                 # Send to whoever is listening
                 xbee.transmit(xbee.ADDR_BROADCAST, s)
-            
-                # Toggle the LED state every time we transmit
-                led.value(ledState)
-                ledState = not ledState
-        
-            # Do nothing
+
+            # Turn on the status leds every statusToggleRate time through
+            statusToggleCount+=1
+            if (statusToggleCount % statusToggleRate) == 0:
+                flashStatusLED(currentMode, True)
+            # Wait a bit (also control how often we send messages to the winches)
             utime.sleep_ms(pollInterval)
+            # Off with the leds
+            flashStatusLED(currentMode, False)
 
     except Exception as e:
         # Will appear on the MicroPython terminal, so useful for debugging.
