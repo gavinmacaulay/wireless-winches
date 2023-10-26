@@ -7,6 +7,10 @@ import sys
 from xbee import relay
 from max17048 import max17048
 
+# Defines the variable hardwareVersion
+# 1 == manually wired controller, 2 == PCB v1.2 
+import cfg
+
 # Configurations
 
 # Time between checking controls (also the time between sending messages to the winches)
@@ -26,14 +30,13 @@ up = '2'
 down = '1'
 
 # Mode switch states
-CONTROLLER = 1
 EXTENDER = 0
+CONTROLLER = 1
+modeText = ['extender', 'controller']
 
-# 1 == manually wired controller, 2 == PCB v1.2 
-hardwareVersion = 2
-
-# default battery voltage value
+# if there is no battery gauge, we say that it is empty
 bVolt = 0.0 # [V]
+bSOC = 0.0 # [%]
 
 # This xbee's node identifier
 ident = xbee.atcmd('NI')
@@ -69,7 +72,7 @@ def receive_status(m):
 # Send on Bluetooth the state of the battery in the controller
 def send_self_battery(ident, mode, v, soc):
     try:
-        relay.send(relay.BLUETOOTH, '0,{},{},{:0.2f},{:0.1f}'.format(ident,mode,v,soc))
+        relay.send(relay.BLUETOOTH, '0,{},{},{:0.2f},{:0.1f}'.format(ident,modeText[mode],v,soc))
     except:
         pass
 
@@ -111,7 +114,7 @@ speedPot = machine.ADC(machine.Pin.board.D0)
 winch1out = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
 winch1in = machine.Pin(machine.Pin.board.D12, machine.Pin.IN, machine.Pin.PULL_UP)
 
-if hardwareVersion == 1:
+if cfg.hardwareVersion == 1:
     winch2out = machine.Pin(machine.Pin.board.D1, machine.Pin.IN, machine.Pin.PULL_UP)
     winch2in = machine.Pin(machine.Pin.board.D11, machine.Pin.IN, machine.Pin.PULL_UP)
     winch3out = machine.Pin(machine.Pin.board.D2, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -133,19 +136,6 @@ if currentMode == CONTROLLER:
 while True:
     try:
         while True:
-            # Measure battery voltage
-            if hardwareVersion == 2: 
-                batteryCount += 1
-                if batteryCount >= batteryInterval:            
-                    batteryCount = 0
-                    if battery != None:
-                        bVolt = battery.getVCell() # [V]
-                        bSOC = battery.getSOC() # [%]
-                    else:
-                        bVolt = 0.0
-                        bSOC = 0.0
-                    send_self_battery(ident, currentMode, bVolt, bSOC)
-            
             # work out if we need to change mode
             if (modeSelect.value() != currentMode):
                 if currentMode == CONTROLLER:
@@ -191,14 +181,33 @@ while True:
                 # Send to whoever is listening
                 xbee.transmit(xbee.ADDR_BROADCAST, s)
 
-            # Turn on the status leds every statusToggleRate time through
-            statusToggleCount+=1
-            if (statusToggleCount % statusToggleRate) == 0:
-                flashStatusLED(currentMode, True)
+            # Measure battery voltage and do LEDs
+            if cfg.hardwareVersion == 2: 
+                batteryCount += 1
+                if batteryCount >= batteryInterval:            
+                    batteryCount = 0
+                    if battery != None:
+                        bVolt = battery.getVCell() # [V]
+                        bSOC = battery.getSOC() # [%]
+                    send_self_battery(ident, currentMode, bVolt, bSOC)
+            
+                # Turn on the status leds every statusToggleRate time through
+                statusToggleCount+=1
+                if bSOC > 50.0:
+                    statusToggleRate = 1
+                elif bSOC > 25.0:
+                    statusToggleRate = 2
+                else:
+                    statusToggleRate = 10
+                if (statusToggleCount % statusToggleRate) == 0:
+                    flashStatusLED(currentMode, True)
+
             # Wait a bit (also control how often we send messages to the winches)
             utime.sleep_ms(pollInterval)
-            # Off with the leds
-            flashStatusLED(currentMode, False)
+
+            # Off with the LEDs if we have them
+            if cfg.hardwareVersion == 2 and statusToggleRate != 1:
+                flashStatusLED(currentMode, False)
 
     except Exception as e:
         # Will appear on the MicroPython terminal, so useful for debugging.
