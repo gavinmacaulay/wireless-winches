@@ -189,14 +189,16 @@ while True:
                     if battery != None:
                         bVolt = battery.getVCell() # [V]
                         bSOC = battery.getSOC() # [%]
+                        if bSOC > 100.0: 
+                            bSOC = 100.0
                     send_self_battery(ident, currentMode, bVolt, bSOC)
             
                 # Turn on the status leds every statusToggleRate time through
                 statusToggleCount+=1
                 if bSOC > 50.0:
-                    statusToggleRate = 1
-                elif bSOC > 25.0:
                     statusToggleRate = 2
+                elif bSOC > 25.0:
+                    statusToggleRate = 5
                 else:
                     statusToggleRate = 10
                 if (statusToggleCount % statusToggleRate) == 0:
