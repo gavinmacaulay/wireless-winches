@@ -181,11 +181,12 @@ while True:
 
             # Measure battery voltage and do LEDs
             if cfg.hardwareVersion == 2:
-                if (battery != None) and ((loopCount % batteryInterval) == 0):
-                    bVolt = battery.getVCell() # [V]
-                    bSOC = battery.getSOC() # [%]
-                    if bSOC > 100.0: bSOC = 100.0
-                send_self_battery(ident, currentMode, bVolt, bSOC)
+                if (loopCount % batteryInterval) == 0:
+                    if battery != None:
+                        bVolt = battery.getVCell() # [V]
+                        bSOC = battery.getSOC() # [%]
+                        if bSOC > 100.0: bSOC = 100.0
+                    send_self_battery(ident, currentMode, bVolt, bSOC)
             
                 # Turn on the status leds every statusToggleRate time through
                 if bSOC > 50.0:
@@ -194,6 +195,7 @@ while True:
                     statusToggleRate = 5 # every 5th time
                 else:
                     statusToggleRate = 10 # every 10th time
+                    
                 if (loopCount % statusToggleRate) == 0:
                     flashStatusLED(currentMode, True)
                     
