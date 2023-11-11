@@ -1,15 +1,21 @@
 # Code to run on the Aqualyd echosounder calibration winch wireless control box
 
 import machine
+# Defines the variable hardwareVersion
+# 1 == manually wired controller, 2 == PCB v1.2 
+import cfg
+if cfg.hardwareVersion == 2:
+    # Status leds. These only exist on the PCB version.
+    # Do these early cause default states of the pin can cause unwanted
+    # operation of the leds
+    ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
+    ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
+
 import utime
 import xbee
 import sys
 from xbee import relay
 from max17048 import max17048
-
-# Defines the variable hardwareVersion
-# 1 == manually wired controller, 2 == PCB v1.2 
-import cfg
 
 # Configurations
 
@@ -40,14 +46,6 @@ bSOC = 0.0 # [%]
 
 # This xbee's node identifier
 ident = xbee.atcmd('NI')
-
-# Status leds. These only exist on the PCB version.
-# Do these early cause default states of the pin can cause unwanted
-# operation of the leds
-ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT)
-ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT)
-ledRed.off()
-ledGreen.off()
 
 # Battery monitoring
 try:
