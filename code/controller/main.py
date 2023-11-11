@@ -16,13 +16,13 @@ import cfg
 # Time between checking controls (also the time between sending messages to the winches)
 pollInterval = 100 # [ms] 
 
+# Used to do things every x'th time through the main loop
+loopCount = 0
 # How often to toggle the status LED
 statusToggleRate = 10 # every nth time through the main loop
-statusToggleCount = 0
 
 # How often to measure and send the controller battery voltage
 batteryInterval = 50 # times through the pollInternal loop
-batteryCount = 0
 
 # Codes that are sent to the receivers
 stop = '0'
@@ -182,29 +182,26 @@ while True:
                 xbee.transmit(xbee.ADDR_BROADCAST, s)
 
             # Measure battery voltage and do LEDs
-            if cfg.hardwareVersion == 2: 
-                batteryCount += 1
-                if batteryCount >= batteryInterval:            
-                    batteryCount = 0
-                    if battery != None:
-                        bVolt = battery.getVCell() # [V]
-                        bSOC = battery.getSOC() # [%]
-                        if bSOC > 100.0: 
-                            bSOC = 100.0
-                    send_self_battery(ident, currentMode, bVolt, bSOC)
+            if cfg.hardwareVersion == 2:
+                if (battery != None) and ((loopCount % batteryInterval) == 0):
+                    bVolt = battery.getVCell() # [V]
+                    bSOC = battery.getSOC() # [%]
+                    if bSOC > 100.0: bSOC = 100.0
+                send_self_battery(ident, currentMode, bVolt, bSOC)
             
                 # Turn on the status leds every statusToggleRate time through
-                statusToggleCount+=1
                 if bSOC > 50.0:
-                    statusToggleRate = 2
+                    statusToggleRate = 2 # flashes every second time through the loop
                 elif bSOC > 25.0:
-                    statusToggleRate = 5
+                    statusToggleRate = 5 # every 5th time
                 else:
-                    statusToggleRate = 10
-                if (statusToggleCount % statusToggleRate) == 0:
+                    statusToggleRate = 10 # every 10th time
+                if (loopCount % statusToggleRate) == 0:
                     flashStatusLED(currentMode, True)
+                    
+            loopCount+=1
 
-            # Wait a bit (also control how often we send messages to the winches)
+            # Wait a bit (also controls how often we send messages to the winches)
             utime.sleep_ms(pollInterval)
 
             # Off with the LEDs if we have them
