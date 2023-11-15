@@ -4,18 +4,20 @@ import machine
 # Defines the variable hardwareVersion
 # 1 == manually wired controller, 2 == PCB v1.2 
 import cfg
-if cfg.hardwareVersion == 2:
+if cfg.hardwareVersion == 1:
+    ledBlue = machine.Pin(machine.Pin.board.D4, machine.Pin.OUT, value=0)
+else:
     # Status leds. These only exist on the PCB version.
     # Do these early cause default states of the pin can cause unwanted
     # operation of the leds
     ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
     ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
+    from max17048 import max17048
 
 import utime
 import xbee
 import sys
 from xbee import relay
-from max17048 import max17048
 
 # Configurations
 
@@ -25,7 +27,7 @@ pollInterval = 100 # [ms]
 # Used to do things every x'th time through the main loop
 loopCount = 0
 # How often to toggle the status LED
-statusToggleRate = 10 # every nth time through the main loop
+statusToggleRate = 2 # every nth time through the main loop
 
 # How often to measure and send the controller battery voltage
 batteryInterval = 50 # times through the pollInternal loop
@@ -48,11 +50,14 @@ bSOC = 0.0 # [%]
 ident = xbee.atcmd('NI')
 
 # Battery monitoring
-try:
-    battery = max17048()
-except:
+if cfg.hardwareVersion == 2:
+    try:
+        battery = max17048()
+    except:
+        battery = None
+else:
     battery = None
-
+    
 # callback for when data is received from the winches
 def receive_status(m):
     if m is None: # no new message
@@ -77,21 +82,27 @@ def send_self_battery(ident, mode, v, soc):
 # Set the status LED to indicate the operation mode
 def setStatusLED(mode):
     
-    if mode == CONTROLLER:
-        ledGreen.on()
-        ledRed.off()
-    elif mode == EXTENDER:
-        ledGreen.off()
-        ledRed.on()
+    if cfg.hardwareVersion == 1:
+        ledBlue.on()
+    else:
+        if mode == CONTROLLER:
+            ledGreen.on()
+            ledRed.off()
+        elif mode == EXTENDER:
+            ledGreen.off()
+            ledRed.on()
 
 # Used to flash the leds on and off
 def flashStatusLED(mode, state):
 
-    if mode == CONTROLLER:
-        ledGreen.value(state)
-        
-    if mode == EXTENDER:
-        ledRed.value(state)
+    if cfg.hardwareVersion == 1:
+        ledBlue.value(state)
+    else:
+        if mode == CONTROLLER:
+            ledGreen.value(state)
+            
+        if mode == EXTENDER:
+            ledRed.value(state)
 
 # Disable pins that aren't used.
 machine.Pin(machine.Pin.board.D16, mode=machine.Pin.DISABLED)
@@ -196,16 +207,16 @@ while True:
                 else:
                     statusToggleRate = 10 # every 10th time
                     
-                if (loopCount % statusToggleRate) == 0:
-                    flashStatusLED(currentMode, True)
+            if (loopCount % statusToggleRate) == 0:
+                flashStatusLED(currentMode, True)
                     
             loopCount+=1
 
             # Wait a bit (also controls how often we send messages to the winches)
             utime.sleep_ms(pollInterval)
 
-            # Off with the LEDs if we have them
-            if cfg.hardwareVersion == 2 and statusToggleRate != 1:
+            # Off with the LEDs
+            if statusToggleRate != 1:
                 flashStatusLED(currentMode, False)
 
     except Exception as e:
