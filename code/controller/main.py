@@ -73,9 +73,9 @@ def receive_status(m):
         pass
 
 # Send on Bluetooth the state of the battery in the controller
-def send_self_battery(ident, mode, v, soc):
+def send_self_battery(ident, mode, v, soc, rate):
     try:
-        relay.send(relay.BLUETOOTH, '0,{},{},{:0.2f},{:0.1f}'.format(ident,modeText[mode],v,soc))
+        relay.send(relay.BLUETOOTH, '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(ident,modeText[mode],v,soc,rate))
     except:
         pass
 
@@ -196,8 +196,9 @@ while True:
                     if battery != None:
                         bVolt = battery.getVCell() # [V]
                         bSOC = battery.getSOC() # [%]
+                        bCRate = battery.getChargeRate() # [%/hr]
                         if bSOC > 100.0: bSOC = 100.0
-                    send_self_battery(ident, currentMode, bVolt, bSOC)
+                    send_self_battery(ident, currentMode, bVolt, bSOC, bCRate)
             
                 # Turn on the status leds every statusToggleRate time through
                 if bSOC > 50.0:
