@@ -45,6 +45,7 @@ modeText = ['extender', 'controller']
 # if there is no battery gauge, we say that it is empty
 bVolt = 0.0 # [V]
 bSOC = 0.0 # [%]
+bCRate = 0.0 # [%/hr]
 
 # This xbee's node identifier
 ident = xbee.atcmd('NI')
