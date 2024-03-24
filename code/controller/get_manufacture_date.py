@@ -33,6 +33,6 @@ def get_manufacture_date():
     
     date = civil_from_days(days_since)
     
-    return 'Manufacture occured on {}-{}-{} at {:02d}:00.'.format(date[0], date[1], date[2]
+    return 'Manufacture occured on {}-{}-{} at {:02d}:00.'.format(date[0], date[1], date[2])
 
 
