@@ -137,8 +137,6 @@ else:
     
     # and set unused pins to disabled
     machine.Pin(machine.Pin.board.D2, mode=machine.Pin.DISABLED)
-    #machine.Pin(machine.Pin.board.D1, mode=machine.Pin.ALT, pull=machine.Pin.PULL_UP, alt=65)
-    #machine.Pin(machine.Pin.board.D11, mode=machine.Pin.ALT, pull=machine.Pin.PULL_UP, alt=75)
 
 if currentMode == CONTROLLER:
     xbee.receive_callback(receive_status)
@@ -148,6 +146,7 @@ while True:
         while True:
             # work out if we need to change mode
             if (modeSelect.value() != currentMode):
+                loopCount = 0 # will cause a new battery message to be sent to the app
                 if currentMode == CONTROLLER:
                     currentMode = EXTENDER
                     xbee.receive_callback(None)
