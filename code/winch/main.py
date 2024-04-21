@@ -5,6 +5,7 @@ import array
 from sys import stdin, stdout
 from machine import Pin
 import micropython
+#from store_value import storeValue
 
 class TicXbee(object):
     def __init__(self):
@@ -123,6 +124,14 @@ max_tic_pulses = max_line_speed / drum_circum * tic_pulses_per_rev
 pulses_factor_speed = drum_circum / tic_pulses_per_rev
 pulses_factor_position = drum_circum / tic_pulses_per_rev * tic_multiplier
 
+pos_offset = 0.0 # [m]
+#try:
+#    pos_store = storeValue()
+#    pos_offset = pos_store.get()
+#except RuntimeError:
+#    pos_offset = 0.0 # [m]
+
+
 # note: there are some speeds that the motor resonates strongly at and for which
 # the motor 'jams'. These ranges need to be avoided...
 step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
@@ -210,7 +219,8 @@ while True:
 
             (vin, pos_actual, velocity_actual, t) = get_status()
             v_physical = velocity_actual * pulses_factor_speed # [m/s]
-            p_physical = pos_actual * pulses_factor_position # [m]
+            p_physical = pos_actual * pulses_factor_position + pos_offset # [m]
+            # pos_store.put(p_physical)
         
             data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
             if len(data) > max_payload_len:
