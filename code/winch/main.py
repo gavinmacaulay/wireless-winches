@@ -4,7 +4,7 @@ import xbee
 import array
 from sys import stdin, stdout
 from machine import Pin
-import micropython
+from micropython import kbd_intr
 #from store_value import storeValue
 
 class TicXbee(object):
