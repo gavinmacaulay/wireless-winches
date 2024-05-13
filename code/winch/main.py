@@ -5,13 +5,13 @@ import array
 from sys import stdin, stdout
 from machine import Pin
 from micropython import kbd_intr
-#from store_value import storeValue
+from store_value import storeValue
 
 class TicXbee(object):
     def __init__(self):
         # Get the winch id
         self.addr = int(xbee.atcmd('NI')[-1])
-        micropython.kbd_intr(-1) # ignore Ctrl-C (0x03) on UART
+        kbd_intr(-1) # ignore Ctrl-C (0x03) on UART
     
     def send_command(self, cmd, data_bytes):
         # data_byes should be an iterable data structure
@@ -125,12 +125,11 @@ pulses_factor_speed = drum_circum / tic_pulses_per_rev
 pulses_factor_position = drum_circum / tic_pulses_per_rev * tic_multiplier
 
 pos_offset = 0.0 # [m]
-#try:
-#    pos_store = storeValue()
-#    pos_offset = pos_store.get()
-#except RuntimeError:
-#    pos_offset = 0.0 # [m]
-
+try:
+    pos_store = storeValue()
+    pos_offset = pos_store.get()
+except RuntimeError:
+    pos_offset = 0.0 # [m]
 
 # note: there are some speeds that the motor resonates strongly at and for which
 # the motor 'jams'. These ranges need to be avoided...
@@ -220,8 +219,11 @@ while True:
             (vin, pos_actual, velocity_actual, t) = get_status()
             v_physical = velocity_actual * pulses_factor_speed # [m/s]
             p_physical = pos_actual * pulses_factor_position + pos_offset # [m]
-            # pos_store.put(p_physical)
-        
+            try:
+                pos_store.put(p_physical)
+            except Exception as e:
+                pass
+            
             data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
             if len(data) > max_payload_len:
                 data = '{},error - message too long'.format(winch)
