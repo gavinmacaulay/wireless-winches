@@ -24,31 +24,38 @@ class storeValue():
     def __init__(self):
         # Setup access to the FRAM
         self.i2c = I2C(1, freq=400000)
-        self.f = FRAM(self.i2c, verbose=False)
+        self.f = FRAM(self.i2c)
         self.posAlternator = self.__storeLocation()
+        self.checksum = bytearray(1)
+        self.cPos = bytearray(1)
         
         self.storeFormat = const('@f')  # will be used in pack() and unpack()
         self.storeSize = const(calcsize(self.storeFormat))  # bytes 
                     
     def put(self, v):
         """Store the given value."""
-        self.cPos = next(self.posAlternator)  # get next location to store at
+        self.cPos[0] = next(self.posAlternator)  # get next location to store at
         ba = bytearray(pack(self.storeFormat, v))  # make bytearray of data
-        _ = self.f.readwrite(self.cPos+1, ba, read=False)  # store data
-        self.f[self.cPos] = self.__checksum(ba)  # store checksum
+        _ = self.f.readwrite(self.cPos[0]+1, ba, read=False)  # store data
+        self.checksum[0] = self.__checksum(ba)
+        self.f.readwrite(self.cPos[0], self.checksum, read=False)  # store checksum
+
         # Store location of most recently written data. If this line succeeds, then
         # all is good. If it fails (e.g. due to loss of power), a read will get the 
         # data in the previous location, which should be good.
-        self.f[0] = self.cPos  # store location
+        self.f.readwrite(0, self.cPos, read=False)  # store location
 
     def get(self):
         """Retrieve a value."""
-        cPos = self.f[0] # get location of most recently written data
-        checksum = self.f[cPos]
+        self.f.readwrite(0, self.cPos, read=True) # get location of most recently written data
+        self.f.readwrite(self.cPos[0], self.checksum, read=True) # get checksum
+        
         ba = bytearray(self.storeSize)
-        _ = self.f.readwrite(cPos+1, ba, read=True)
+        _ = self.f.readwrite(self.cPos[0]+1, ba, read=True) # get value
+
         v, = unpack(self.storeFormat, ba)
-        if not (checksum == self.__checksum(ba)):
+
+        if not (self.checksum[0] == self.__checksum(ba)):
             # should never happen
             raise RuntimeError('Could not read a valid value from FRAM')
         return v
