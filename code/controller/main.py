@@ -186,6 +186,9 @@ while True:
                 # The speed ADC is 12 bit, but we only want 8 bits to send to the winches,
                 # so chop off the lower bits (and it removes ADC noise too)                
                 s += '{:03d}'.format(speed >> 4)
+                
+                # Future proofing - two extra chars on the message
+                s + '00'
 
                 # Send to whoever is listening
                 xbee.transmit(xbee.ADDR_BROADCAST, s)

@@ -2,6 +2,7 @@
 
 import xbee
 import array
+import utime
 from sys import stdin, stdout
 from machine import Pin
 from micropython import kbd_intr
@@ -35,12 +36,7 @@ class TicXbee(object):
     def set_velocity(self, velocity, step_mode):
         #relay.send(relay.BLUETOOTH, 'Setting velocity to {}, stepping to {}'.format(velocity, step_mode))
         # A 32-bit write for the velocity
-        self.send_command(0xE3, [((velocity >>  7) & 1) | ((velocity >> 14) & 2) |
-                                 ((velocity >> 21) & 4) | ((velocity >> 28) & 8),
-                                 velocity >> 0 & 0x7F,
-                                 velocity >> 8 & 0x7F,
-                                 velocity >> 16 & 0x7F,
-                                 velocity >> 24 & 0x7F]) 
+        self.send_command(0xE3, self.encode_32bit(velocity))
         # A 7-bit write for the stepping
         self.send_command(0x94, [step_mode & 127]) 
 
@@ -63,7 +59,19 @@ class TicXbee(object):
 
     def energize(self):
         self.send_command(0x85, [])
+        
+    def halt_and_set_position(self, pos):
+        # A signed 32-bit write for the position
+        self.send_command(0xEC, self.encode_32bit(pos))
 
+    def encode_32bit(self, v):
+        return [((v >>  7) & 1) | ((v >> 14) & 2) |
+                ((v >> 21) & 4) | ((v >> 28) & 8),
+                v >> 0 & 0x7F,
+                v >> 8 & 0x7F,
+                v >> 16 & 0x7F,
+                v >> 24 & 0x7F]
+                
 def twos_complement(value, bitWidth):
 
     if value >= 2**bitWidth:
@@ -159,7 +167,11 @@ for _ in range(4):
 
 status_counter = 0
 prev_current_limit = 0
-velocity_actual = None
+velocity_actual = 0
+
+# Extra command chars
+action = '_'
+winch_id = '_'
 
 # Listen for wireless commands.
 while True:
@@ -177,8 +189,29 @@ while True:
         # parse out the speed from the payload
         speed_num = int(cmd[3:6]) # 0-255
 
-        #relay.send(relay.BLUETOOTH, cmd)
+        # extra commands come in two chars, but not all controllers send these bytes.
+        if len(cmd) >= 8:
+            action = cmd[6]
+            winch_id = int(cmd[7])
         
+        #relay.send(relay.BLUETOOTH, cmd)
+
+        # if requested, zero the position
+        if (action == 'z') and (winch_id == winch):
+            # get winch speed to zero first
+            tic.set_velocity(0, step_mode) # might be already, but just in case...
+            (vin, pos_actual, velocity_actual, t) = get_status()
+            while velocity_actual != 0:
+                utime.sleep_ms(100)
+                (vin, pos_actual, velocity_actual, t) = get_status()
+                
+            pos_store.put(0.0)
+            pos_offset = 0.0
+            tic.halt_and_set_position(0)
+            # so that we don't do the reset again the next time through the loop.
+            action = '_'
+            winch_id = '_'
+
         # and then the direction, to give velocity
         dir_char = cmd[winch-1]
         if dir_char == '1': # pay out
@@ -218,8 +251,11 @@ while True:
 
             (vin, pos_actual, velocity_actual, t) = get_status()
             v_physical = velocity_actual * pulses_factor_speed # [m/s]
+            
             p_physical = pos_actual * pulses_factor_position + pos_offset # [m]
             try:
+                # This value only gets used on startup, when pos_actual is zero, so storing
+                # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
                 pos_store.put(p_physical)
             except Exception as e:
                 pass
