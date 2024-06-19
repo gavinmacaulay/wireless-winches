@@ -100,6 +100,32 @@ def get_status():
         
     return (vin, position, velocity, xbee_temp)
 
+def get_and_send_status():
+    # Get winch status and send it to the controller
+    (vin, pos_actual, velocity_actual, t) = get_status()
+    v_physical = velocity_actual * pulses_factor_speed # [m/s]
+
+    p_physical = pos_actual * pulses_factor_position + pos_offset # [m]
+    try:
+        # This value only gets used on startup, when pos_actual is zero, so storing
+        # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
+        pos_store.put(p_physical)
+    except Exception as e:
+        pass
+
+    data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
+    if len(data) > max_payload_len:
+        data = '{},error - message too long'.format(winch)
+
+    # send to whoever sent the most recent message we received
+    try:
+        led.value(True)
+        xbee.transmit(sender_addr, data)
+        led.value(False)
+    except Exception as e:
+        pass
+
+
 # Config variables
 status_period = 5 # generate a status message every x recieved messages from controller
 max_motor_current = 2720 # [mA] From motor specs
@@ -188,16 +214,21 @@ while True:
 
         # parse out the speed from the payload
         speed_num = int(cmd[3:6]) # 0-255
+        
+        if speed_num > 255:
+            speed_num = 255
+        elif speed_num < 0:
+            speed_num = 0
 
         # extra commands come in two chars, but not all controllers send these bytes.
         if len(cmd) >= 8:
             action = cmd[6]
-            winch_id = int(cmd[7])
+            winch_id = cmd[7]
         
         #relay.send(relay.BLUETOOTH, cmd)
 
         # if requested, zero the position
-        if (action == 'z') and (winch_id == winch):
+        if (action == 'z') and (winch_id == str(winch)):
             # get winch speed to zero first
             tic.set_velocity(0, step_mode) # might be already, but just in case...
             (vin, pos_actual, velocity_actual, t) = get_status()
@@ -205,9 +236,11 @@ while True:
                 utime.sleep_ms(100)
                 (vin, pos_actual, velocity_actual, t) = get_status()
                 
-            pos_store.put(0.0)
-            pos_offset = 0.0
             tic.halt_and_set_position(0)
+            pos_offset = 0.0
+            pos_store.put(0.0)
+            get_and_send_status() # update the Android app display immediately
+            
             # so that we don't do the reset again the next time through the loop.
             action = '_'
             winch_id = '_'
@@ -248,34 +281,5 @@ while True:
         # get and send a status message to the controller
         if status_counter >= status_period:
             status_counter = 0
-
-            (vin, pos_actual, velocity_actual, t) = get_status()
-            v_physical = velocity_actual * pulses_factor_speed # [m/s]
-            
-            p_physical = pos_actual * pulses_factor_position + pos_offset # [m]
-            try:
-                # This value only gets used on startup, when pos_actual is zero, so storing
-                # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
-                pos_store.put(p_physical)
-            except Exception as e:
-                pass
-            
-            data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
-            if len(data) > max_payload_len:
-                data = '{},error - message too long'.format(winch)
-        
-            # send to whoever sent the most recent message we received
-            try:
-                led.value(True)
-                xbee.transmit(sender_addr, data)
-                led.value(False)
-            except Exception as e:
-                pass
-
-
-        
-        
-        
-        
-        
+            get_and_send_status()
         
