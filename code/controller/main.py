@@ -1,19 +1,12 @@
 # Code to run on the Aqualyd echosounder calibration winch wireless control box
 
 import machine
-# Defines the variable hardwareVersion
-# 1 == manually wired controller, 2 == PCB v1.2 
 import cfg
-if cfg.hardwareVersion == 1:
-    ledBlue = machine.Pin(machine.Pin.board.D4, machine.Pin.OUT, value=0)
-else:
-    # Status leds. These only exist on the PCB version.
-    # Do these early cause default states of the pin can cause unwanted
-    # operation of the leds
-    ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
-    ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
-    from max17048 import max17048
-
+# Status leds. Do these early cause default states of the pin can cause unwanted
+# operation of the leds
+ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
+ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
+from max17048 import max17048
 import utime
 import xbee
 import sys
@@ -51,12 +44,9 @@ bCRate = 0.0 # [%/hr]
 ident = xbee.atcmd('NI')
 
 # Battery monitoring
-if cfg.hardwareVersion == 2:
-    try:
-        battery = max17048()
-    except:
-        battery = None
-else:
+try:
+    battery = max17048()
+except:
     battery = None
     
 # callback for when data is received from the winches
@@ -82,28 +72,22 @@ def send_self_battery(ident, mode, v, soc, rate):
 
 # Set the status LED to indicate the operation mode
 def setStatusLED(mode):
-    
-    if cfg.hardwareVersion == 1:
-        ledBlue.on()
-    else:
-        if mode == CONTROLLER:
-            ledGreen.on()
-            ledRed.off()
-        elif mode == EXTENDER:
-            ledGreen.off()
-            ledRed.on()
+
+    if mode == CONTROLLER:
+        ledGreen.on()
+        ledRed.off()
+    elif mode == EXTENDER:
+        ledGreen.off()
+        ledRed.on()
 
 # Used to flash the leds on and off
 def flashStatusLED(mode, state):
 
-    if cfg.hardwareVersion == 1:
-        ledBlue.value(state)
-    else:
-        if mode == CONTROLLER:
-            ledGreen.value(state)
-            
-        if mode == EXTENDER:
-            ledRed.value(state)
+    if mode == CONTROLLER:
+        ledGreen.value(state)
+        
+    if mode == EXTENDER:
+        ledRed.value(state)
 
 # Disable pins that aren't used.
 machine.Pin(machine.Pin.board.D16, mode=machine.Pin.DISABLED)
@@ -123,20 +107,13 @@ speedPot = machine.ADC(machine.Pin.board.D0)
 # Pin definitions for the winches
 winch1out = machine.Pin(machine.Pin.board.D10, machine.Pin.IN, machine.Pin.PULL_UP)
 winch1in = machine.Pin(machine.Pin.board.D12, machine.Pin.IN, machine.Pin.PULL_UP)
-
-if cfg.hardwareVersion == 1:
-    winch2out = machine.Pin(machine.Pin.board.D1, machine.Pin.IN, machine.Pin.PULL_UP)
-    winch2in = machine.Pin(machine.Pin.board.D11, machine.Pin.IN, machine.Pin.PULL_UP)
-    winch3out = machine.Pin(machine.Pin.board.D2, machine.Pin.IN, machine.Pin.PULL_UP)
-    winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
-else:
-    winch2out = machine.Pin(machine.Pin.board.D7, machine.Pin.IN, machine.Pin.PULL_UP)
-    winch2in = machine.Pin(machine.Pin.board.D9, machine.Pin.IN, machine.Pin.PULL_UP)
-    winch3out = machine.Pin(machine.Pin.board.D4, machine.Pin.IN, machine.Pin.PULL_UP)
-    winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
+winch2out = machine.Pin(machine.Pin.board.D7, machine.Pin.IN, machine.Pin.PULL_UP)
+winch2in = machine.Pin(machine.Pin.board.D9, machine.Pin.IN, machine.Pin.PULL_UP)
+winch3out = machine.Pin(machine.Pin.board.D4, machine.Pin.IN, machine.Pin.PULL_UP)
+winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
     
-    # and set unused pins to disabled
-    machine.Pin(machine.Pin.board.D2, mode=machine.Pin.DISABLED)
+# and set unused pins to disabled
+machine.Pin(machine.Pin.board.D2, mode=machine.Pin.DISABLED)
 
 if currentMode == CONTROLLER:
     xbee.receive_callback(receive_status)
@@ -194,22 +171,21 @@ while True:
                 xbee.transmit(xbee.ADDR_BROADCAST, s)
 
             # Measure battery voltage and do LEDs
-            if cfg.hardwareVersion == 2:
-                if (loopCount % batteryInterval) == 0:
-                    if battery != None:
-                        bVolt = battery.getVCell() # [V]
-                        bSOC = battery.getSOC() # [%]
-                        bCRate = battery.getChargeRate() # [%/hr]
-                        if bSOC > 100.0: bSOC = 100.0
-                    send_self_battery(ident, currentMode, bVolt, bSOC, bCRate)
-            
-                # Turn on the status leds every statusToggleRate time through
-                if bSOC > 50.0:
-                    statusToggleRate = 2 # flashes every second time through the loop
-                elif bSOC > 25.0:
-                    statusToggleRate = 5 # every 5th time
-                else:
-                    statusToggleRate = 10 # every 10th time
+            if (loopCount % batteryInterval) == 0:
+                if battery != None:
+                    bVolt = battery.getVCell() # [V]
+                    bSOC = battery.getSOC() # [%]
+                    bCRate = battery.getChargeRate() # [%/hr]
+                    if bSOC > 100.0: bSOC = 100.0
+                send_self_battery(ident, currentMode, bVolt, bSOC, bCRate)
+        
+            # Turn on the status leds every statusToggleRate time through
+            if bSOC > 50.0:
+                statusToggleRate = 2 # flashes every second time through the loop
+            elif bSOC > 25.0:
+                statusToggleRate = 5 # every 5th time
+            else:
+                statusToggleRate = 10 # every 10th time
                     
             if (loopCount % statusToggleRate) == 0:
                 flashStatusLED(currentMode, True)
