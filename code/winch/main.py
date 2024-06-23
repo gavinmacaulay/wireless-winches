@@ -5,6 +5,7 @@ import array
 import utime
 from sys import stdin, stdout
 from machine import Pin
+from machine import WDT
 from micropython import kbd_intr
 from store_value import storeValue
 
@@ -199,9 +200,13 @@ velocity_actual = 0
 action = '_'
 winch_id = '_'
 
+wdt = WDT(timeout=2000)  # [ms]
+
 # Listen for wireless commands.
 while True:
     m = xbee.receive() # this does not block
+    wdt.feed()
+    
     if m is None: # no new message
         pass
     else:
