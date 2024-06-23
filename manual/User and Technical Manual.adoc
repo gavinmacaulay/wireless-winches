@@ -174,9 +174,16 @@ The first three characters specify the required winch motion for each winch (fir
 
 Characters four to six are interpreted as an integer number between 0 and 255 that gives the position of the speed dial. 
 
-Character 7 is a command code. The only value accepted to date is 'z', used to tell a winch to do a hardware reset (set to zero) of the line out counter. Character 8 specifies which winch the command code applies to (i.e., 1, 2, or 3).
+Character 7 is a command code. The only value accepted to date is `z`, used to tell a winch to zero the line out counter. If `z` is sent, character 8 specifies which winch the reset applies to (i.e., `1`, `2`, or `3`). When the line out is zeroed, that winch will stop rotating, the line out will be set to zero, a status message will be sent to the Android app, and then any speed/direction commands in the message for that winch will be acted upon.
 
-For example, a message of `000105` will ensure that all winches are stopped and a message of `011000` will cause winches 2 and 3 to pay line out at the minimum speed. A message of `201255` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate.
+Some examples: 
+
+* `000105` will ensure that all winches are stopped.
+* `011000` will cause winches 2 and 3 to pay line out at the minimum speed.
+* `20125500` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate. As the 7th character is not `z``, then the last two characters will have no effect.
+* `201255z2` will cause the line counter for winch 2 to be zeroed.
+
+
 
 A winch status message is sent by each winch unit back to the controller, which send it out over the Bluetooth Low Energy communication link (using the Xbee3 User Data Frame mechanism). An Android app is available that uses these messages to show winch status information. The message is a comma separated ASCII string in the form:
 

@@ -213,13 +213,15 @@ while True:
         cmd = m['payload'].decode('ascii')
 
         # parse out the speed from the payload
-        speed_num = int(cmd[3:6]) # 0-255
-        
-        if speed_num > 255:
-            speed_num = 255
-        elif speed_num < 0:
+        try:
+            speed_num = int(cmd[3:6]) # 0-255
+            if speed_num > 255:
+                speed_num = 255
+            elif speed_num < 0:
+                speed_num = 0
+        except ValueError:
             speed_num = 0
-
+        
         # extra commands come in two chars, but not all controllers send these bytes.
         if len(cmd) >= 8:
             action = cmd[6]
