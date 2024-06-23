@@ -1,7 +1,6 @@
 # Code to run on the Aqualyd echosounder calibration winch wireless control box
 
 import machine
-import cfg
 # Status leds. Do these early cause default states of the pin can cause unwanted
 # operation of the leds
 ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
@@ -9,7 +8,6 @@ ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
 from max17048 import max17048
 import utime
 import xbee
-import sys
 from xbee import relay
 
 # Configurations
@@ -19,6 +17,7 @@ pollInterval = 100 # [ms]
 
 # Used to do things every x'th time through the main loop
 loopCount = 0
+
 # How often to toggle the status LED
 statusToggleRate = 2 # every nth time through the main loop
 
@@ -90,6 +89,7 @@ def flashStatusLED(mode, state):
         ledRed.value(state)
 
 # Disable pins that aren't used.
+machine.Pin(machine.Pin.board.D2, mode=machine.Pin.DISABLED)
 machine.Pin(machine.Pin.board.D16, mode=machine.Pin.DISABLED)
 machine.Pin(machine.Pin.board.D17, mode=machine.Pin.DISABLED)
 machine.Pin(machine.Pin.board.D18, mode=machine.Pin.DISABLED)
@@ -111,9 +111,6 @@ winch2out = machine.Pin(machine.Pin.board.D7, machine.Pin.IN, machine.Pin.PULL_U
 winch2in = machine.Pin(machine.Pin.board.D9, machine.Pin.IN, machine.Pin.PULL_UP)
 winch3out = machine.Pin(machine.Pin.board.D4, machine.Pin.IN, machine.Pin.PULL_UP)
 winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
-    
-# and set unused pins to disabled
-machine.Pin(machine.Pin.board.D2, mode=machine.Pin.DISABLED)
 
 if currentMode == CONTROLLER:
     xbee.receive_callback(receive_status)
@@ -164,8 +161,15 @@ while True:
                 # so chop off the lower bits (and it removes ADC noise too)                
                 s += '{:03d}'.format(speed >> 4)
                 
-                # Future proofing - two extra chars on the message
-                s + '00'
+                # The app can generate control messages for the winches, so pass them on.
+                app_msg = relay.receive()
+                if app_msg != None:
+                    # Got something from the app
+                    app_cmd = app_msg['message'].decode('ascii')
+                    if len(app_cmd) == 2:
+                        s += app_cmd
+                else:
+                    s += '00'
 
                 # Send to whoever is listening
                 xbee.transmit(xbee.ADDR_BROADCAST, s)
