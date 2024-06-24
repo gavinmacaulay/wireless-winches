@@ -14,7 +14,7 @@
 
 [colophon]
 
-(C) 2022 Aqualyd Limited +
+(C) 2024 Aqualyd Limited +
 341 Higgins Road +
 Wakefield +
 New Zealand
@@ -29,9 +29,14 @@ This is the User Manual for the Aqualyd wireless echosounder calibration winch s
 
 == First-use setup
 
-=== Supply of power
+=== Batteries
 
-The winch units each require a Hikoki MultiVolt 36 V DC battery. Four of these batteries are provided and one charger,so that a spare battery is always available and can be charging while using the system.
+The batteries (Nokia BL-5C or equivalent) for the hand controllers need to be installed. To do this, remove the silicone case from the hand controllers and then remove the loose half of the case to expose the controller electronics. Remove the strap that sits across the battery holder (you need a screwdriver for this), then insert the battery, taking care to line up the battery terminals. Reinstall the strap and insert and tighten both strap screws.
+
+Find the plastic bag containing four screws (will be inside the case), reinstall the controller case halves and use the screws to secure them together. Put the silicone cover back on. Turn the controller on and check on the end of the controller case that an LED is flashing.
+
+Four Hikoki MultiVolt 36 V power tool batteries and one charger are provided for the winches. These batteries slide vertically down onto the black clip on a winch. Press the gray buttons on the side of the batteries and pull up to remove a battery. 
+
 
 === Installation of line on the reels
 
@@ -57,7 +62,7 @@ The winch units are designed to be attached to a pipe or plate railing on a vess
 - A pipe attachment uses the supplied hose clamps to secure the aluminium section of the winch unit to the railing. 
 - A plate attachment uses clamps (user supplied) to secure the winch units' plastic base or the aluminium section to the flat plate. 
 
-NOTE: When extending the telescopic poles do not extend each section beyond the red or blue/white band and ensure that each pole clip is closed after extending.
+NOTE: When extending the telescopic poles do not extend each section beyond the red or blue band and ensure that each pole clip is closed after extending.
 
 .Winch unit installed on a ship's railing showing hose clamps, securing pin, and attachment carabiner.
 [[assembled_installed_winch_unit]]
@@ -73,11 +78,11 @@ To make it easy to relate the three winch switches to the winch locations, rotat
 [[hand_controller]]
 image::images/handControllerAnnotated.svg[scaledwidth=8cm,align="center"]
 
-WARNING: Avoid rotating the winches by hand - instead, insert the battery and use the hand controller.
+WARNING: Avoid rotating the winches by hand - instead, insert a battery and use the hand controller.
 
 The hand controller and winches automatically form a wireless mesh network that relays commands from the hand controller to the winches even if all winches are not reachable directly from the hand controller. 
 
-The hand controller can function as a range extender - to activate this, move the mode switch on the end of the hand controller to ``Extender``. Multiple range extenders can be used if necessary. When in extender mode, none of the winch controls on that controller are operational.
+The hand controller can function as a range extender - to activate this, move the mode switch on the end of the hand controller to ``Extender``. The LED on the end of the unit will then flash red instead of green. Multiple range extenders can be used if necessary. When in extender mode, none of the winch controls on that controller are operational.
 
 === Controlling the winches
 
@@ -87,27 +92,29 @@ WARNING: Only use speeds in the red section of the dial when the weight on the w
 
 The in/out switches are configured to pay out line when the inner side of the switch is pressed. In that sense, the arrow on the switches indicates the direction that the sphere will move when viewed in a split-beam echosounder sphere position plot.
 
-NOTE: It is easy to operate the winches without observing the winch and this can quickly cause unintentional damage to the winches or the poles (e.g., pulling a line too hard when the line is caught on the hull, paying out line when there is no tension on the line leading to tangles). Experience suggests that until the sphere is visible on the echosounder split-beam display, all operation of the winches should be done while observing the winch/pole unit.
+NOTE: It is easy to operate the winches without observing the winch and this can quickly cause unintentional damage to the winches or the poles (e.g., pulling a line too hard when the line is caught on the hull, paying out line when there is no tension on the line leading to tangles). Experience suggests that until the sphere is visible on the echosounder split-beam display, operation of the winches should be done while observing the winch/pole unit.
+
+NOTE: If both controllers are turned on and set to ``controller`` mode, then both controllers will be sending commands to the winches, and perhaps sending contradictory commands. A typical symptom of this is a winch moving in a struttering manner. 
 
 === Android app
 
 An app is available on the Google Play Store under the name ``"Aqualyd Winch Status"`` (include the quote marks when searching) or via https://play.google.com/store/apps/details?id=nz.aqualyd.winchStatus. The app requires an Android device running version 9 of Android or later that supports Bluetooth. The app does not provide a way to control the winches. 
 
-The app shows information about the winches, including line out, line speed, battery voltage, and internal winch temperature (<<android_app>>). Information about the controller is also shown. 
+The app shows information about the winches, including line out, line speed, battery voltage, and internal winch temperature (<<android_app>>). Battery charge, mode, and serial number of the controller are also shown. The winches remember the current line out value even when the batteries are removed.
 
-The winch line out values can be zeroed (an offset is applied to make all line out values show as zero). This zeroing can be removed. The winches can also reset their line out counters via the ``reset`` button in the app.
+The winch line out values can be zeroed (using the ``Zero``button, which applies and offset to make all line out values show as zero). This zeroing can be removed (``Unzero` button`). The winches can also reset their line out counters via the ``Reset`` button in the app. This cannot be undone. The ``save`` button is not yet implemented.
 
 .Screenshot from the Android app.
 [[android_app]]
-image::images/app_white_screenshot.png[scaledwidth=6cm,align="center"]
+image::images/app_white_screenshot2.png[scaledwidth=6cm,align="center"]
 
 === Charging the batteries 
 
-The hand controller contains rechargable batteries. To charge this, connect the supplied USB cable to the unit and to a USB power supply (the USB port on a computer is fine) and *turn the unit on*. 
+The hand controller contains rechargable batteries. To charge this, connect the supplied USB cable to the unit and to a USB power supply (the USB port on a computer is fine) and *turn the controller on*. 
 
-Charging a completely flat battery will take about 4 hours - no harm will occur to the battery if it is connected to the charger for longer than this. A fully charged battery will power a unit for about 20 hours.
+Charging a completely flat battery will take about 4 hours - no harm will occur to the battery if it is connected to the charger for longer than this. A fully charged battery will power the controller for about 20 hours.
 
-Note that the unit will be operating and transmitting whenever USB power is suppled, but will not charge the battery until the power switch is turned on (the on/off switch connects or disconnects the battery from the system - it does not affect supply of USB power to the unit's electronics). This means that a unit with a flat, faulty, or absent battery can be used normally by connecting USB power - it will operate as per normal and charge the battery if present.
+Note that the controller will be operating and transmitting whenever USB power is suppled, but will not charge the battery until the power switch is turned on (the on/off switch connects or disconnects the battery from the system - it does not affect supply of USB power to the controller's electronics). This means that a controller with a flat, faulty, or absent battery can be used normally by connecting USB power - it will operate as per normal and charge the battery if present.
 
 The charge of the controller battery is shown in the app and also via LED's on the end of the controller.
 
@@ -132,7 +139,7 @@ The overall system consists of two hand controllers and three winches. Communica
 
 The system is provided in three parts: 1) a transit/storage case that contains the hand controllers and three winch units,, 2) a transit/storage case with the winch batteries and charges, and 3) a tube that contains three telescopic poles (<<whole_system>>). 
 
-.Supplied winch system showing (left) the transit case with included winches and controllers, and (right) the transit case and pole tube.
+.Supplied winch system showing (left) the transit case with included winches and controllers, (centre) the tube containing the poles, and (right) the battery and charger case.
 [[whole_system]]
 image::images/wholeSystem.svg[scaledwidth=18cm,float=right]
 
