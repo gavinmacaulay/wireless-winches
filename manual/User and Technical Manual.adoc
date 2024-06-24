@@ -264,30 +264,19 @@ A wireless system consists of the following components:
 [%autowidth]
 |===
 |Component|Quantity
-|Transit/storage case (Nanuk 960)|1
-|Case foam (lower tray)|1
-|Case foam (upper tray)|1
-|Winch unit (short pole)|2
-|Winch unit (long pole)|1
+|Transit/storage case (Nanuk 960) for winches and controllers with fitted foam|1
+|Transit/storage case (Nanuk 945) for batteries and charger with fitted foam|1
+|Transit/storage tube for poles|1
+|Winch unit (for short pole)|2
+|Winch unit (for long pole)|1
+|Winch batteries|4
+|Winch battery charger|1
 |Hand controller|2
-|Pole transit/storage pipe|1
 |Short pole|2
 |Long pole|1
-|Pole attachment cord|3
+|Pole attachment cord with carabiner|4
 |Pole attachment eyebolt|3
-|Charging cord (USB)|1
+|Controller charging cord (USB)|1
 |User & Technical manual|1
 |Hose clamps (46-70 mm diameter)|6
 |===
-
-[appendix]
-== Schematics
-
-.Wiring schematic for the winch unit.
-[[winch_schematic]]
-image::schematics/winch box.svg[]
-
-.Wiring schematic for the hand controller and range extender
-[[controller_schematics]]
-image::schematics/controller layout.svg[]
-
