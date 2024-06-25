@@ -2,15 +2,18 @@
 
 import xbee
 import array
+import utime
 from sys import stdin, stdout
 from machine import Pin
-import micropython
+from machine import WDT
+from micropython import kbd_intr
+from store_value import storeValue
 
 class TicXbee(object):
     def __init__(self):
         # Get the winch id
         self.addr = int(xbee.atcmd('NI')[-1])
-        micropython.kbd_intr(-1) # ignore Ctrl-C (0x03) on UART
+        kbd_intr(-1) # ignore Ctrl-C (0x03) on UART
     
     def send_command(self, cmd, data_bytes):
         # data_byes should be an iterable data structure
@@ -34,12 +37,7 @@ class TicXbee(object):
     def set_velocity(self, velocity, step_mode):
         #relay.send(relay.BLUETOOTH, 'Setting velocity to {}, stepping to {}'.format(velocity, step_mode))
         # A 32-bit write for the velocity
-        self.send_command(0xE3, [((velocity >>  7) & 1) | ((velocity >> 14) & 2) |
-                                 ((velocity >> 21) & 4) | ((velocity >> 28) & 8),
-                                 velocity >> 0 & 0x7F,
-                                 velocity >> 8 & 0x7F,
-                                 velocity >> 16 & 0x7F,
-                                 velocity >> 24 & 0x7F]) 
+        self.send_command(0xE3, self.encode_32bit(velocity))
         # A 7-bit write for the stepping
         self.send_command(0x94, [step_mode & 127]) 
 
@@ -62,7 +60,19 @@ class TicXbee(object):
 
     def energize(self):
         self.send_command(0x85, [])
+        
+    def halt_and_set_position(self, pos):
+        # A signed 32-bit write for the position
+        self.send_command(0xEC, self.encode_32bit(pos))
 
+    def encode_32bit(self, v):
+        return [((v >>  7) & 1) | ((v >> 14) & 2) |
+                ((v >> 21) & 4) | ((v >> 28) & 8),
+                v >> 0 & 0x7F,
+                v >> 8 & 0x7F,
+                v >> 16 & 0x7F,
+                v >> 24 & 0x7F]
+                
 def twos_complement(value, bitWidth):
 
     if value >= 2**bitWidth:
@@ -90,6 +100,32 @@ def get_status():
         xbee_temp = xbee_temp - 0x10000
         
     return (vin, position, velocity, xbee_temp)
+
+def get_and_send_status():
+    # Get winch status and send it to the controller
+    (vin, pos_actual, velocity_actual, t) = get_status()
+    v_physical = velocity_actual * pulses_factor_speed # [m/s]
+
+    p_physical = pos_actual * pulses_factor_position + pos_offset # [m]
+    try:
+        # This value only gets used on startup, when pos_actual is zero, so storing
+        # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
+        pos_store.put(p_physical)
+    except Exception as e:
+        pass
+
+    data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
+    if len(data) > max_payload_len:
+        data = '{},error - message too long'.format(winch)
+
+    # send to whoever sent the most recent message we received
+    try:
+        led.value(True)
+        xbee.transmit(sender_addr, data)
+        led.value(False)
+    except Exception as e:
+        pass
+
 
 # Config variables
 status_period = 5 # generate a status message every x recieved messages from controller
@@ -123,6 +159,13 @@ max_tic_pulses = max_line_speed / drum_circum * tic_pulses_per_rev
 pulses_factor_speed = drum_circum / tic_pulses_per_rev
 pulses_factor_position = drum_circum / tic_pulses_per_rev * tic_multiplier
 
+pos_offset = 0.0 # [m]
+try:
+    pos_store = storeValue()
+    pos_offset = pos_store.get()
+except RuntimeError:
+    pos_offset = 0.0 # [m]
+
 # note: there are some speeds that the motor resonates strongly at and for which
 # the motor 'jams'. These ranges need to be avoided...
 step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
@@ -151,11 +194,19 @@ for _ in range(4):
 
 status_counter = 0
 prev_current_limit = 0
-velocity_actual = None
+velocity_actual = 0
+
+# Extra command chars
+action = '_'
+winch_id = '_'
+
+wdt = WDT(timeout=2000)  # [ms]
 
 # Listen for wireless commands.
 while True:
     m = xbee.receive() # this does not block
+    wdt.feed()
+    
     if m is None: # no new message
         pass
     else:
@@ -167,10 +218,40 @@ while True:
         cmd = m['payload'].decode('ascii')
 
         # parse out the speed from the payload
-        speed_num = int(cmd[3:6]) # 0-255
-
-        #relay.send(relay.BLUETOOTH, cmd)
+        try:
+            speed_num = int(cmd[3:6]) # 0-255
+            if speed_num > 255:
+                speed_num = 255
+            elif speed_num < 0:
+                speed_num = 0
+        except ValueError:
+            speed_num = 0
         
+        # extra commands come in two chars, but not all controllers send these bytes.
+        if len(cmd) >= 8:
+            action = cmd[6]
+            winch_id = cmd[7]
+        
+        #relay.send(relay.BLUETOOTH, cmd)
+
+        # if requested, zero the position
+        if (action == 'z') and (winch_id == str(winch)):
+            # get winch speed to zero first
+            tic.set_velocity(0, step_mode) # might be already, but just in case...
+            (vin, pos_actual, velocity_actual, t) = get_status()
+            while velocity_actual != 0:
+                utime.sleep_ms(100)
+                (vin, pos_actual, velocity_actual, t) = get_status()
+                
+            tic.halt_and_set_position(0)
+            pos_offset = 0.0
+            pos_store.put(0.0)
+            get_and_send_status() # update the Android app display immediately
+            
+            # so that we don't do the reset again the next time through the loop.
+            action = '_'
+            winch_id = '_'
+
         # and then the direction, to give velocity
         dir_char = cmd[winch-1]
         if dir_char == '1': # pay out
@@ -207,27 +288,5 @@ while True:
         # get and send a status message to the controller
         if status_counter >= status_period:
             status_counter = 0
-
-            (vin, pos_actual, velocity_actual, t) = get_status()
-            v_physical = velocity_actual * pulses_factor_speed # [m/s]
-            p_physical = pos_actual * pulses_factor_position # [m]
-        
-            data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
-            if len(data) > max_payload_len:
-                data = '{},error - message too long'.format(winch)
-        
-            # send to whoever sent the most recent message we received
-            try:
-                led.value(True)
-                xbee.transmit(sender_addr, data)
-                led.value(False)
-            except Exception as e:
-                pass
-
-
-        
-        
-        
-        
-        
+            get_and_send_status()
         

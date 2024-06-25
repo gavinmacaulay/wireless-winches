@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="5.7220001mm"
+   height="5.7220001mm"
+   viewBox="0 0 5.7223606 5.7223606"
+   version="1.1"
+   id="svg2438"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="winch symbol for Android app.svg"
+   inkscape:export-filename="winch symbol for Android app.png"
+   inkscape:export-xdpi="2272.6799"
+   inkscape:export-ydpi="2272.6799"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs2432" />
+  <sodipodi:namedview
+     units="px"
+     fit-margin-bottom="0"
+     fit-margin-right="0"
+     fit-margin-left="0"
+     fit-margin-top="0"
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.42"
+     inkscape:cx="23.029772"
+     inkscape:cy="-3.8528897"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1129"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata2435">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(-32.486362,-6.2278714)"
+     inkscape:label="Winch symbol"
+     inkscape:groupmode="layer"
+     id="layer1"
+     style="display:inline">
+    <rect
+       style="opacity:1;fill:#2554ff;fill-opacity:1;stroke:none;stroke-width:21.3058;stroke-linejoin:round"
+       id="rect4443"
+       width="5.7225995"
+       height="5.7225995"
+       x="32.486362"
+       y="6.2278714" />
+    <g
+       transform="matrix(0.04588693,0,0,0.04588693,32.140572,6.9257055)"
+       id="g844"
+       style="fill:#fffaff;fill-opacity:1;stroke:#ffffff;stroke-opacity:1">
+      <path
+         d="M 36.843254,7.6729166 V 67.468749 Z m 65.616816,0 V 67.468749 Z M 38.430754,19.84375 h 61.912516 z m 0,35.454166 h 61.912516 z"
+         style="fill:#fffaff;fill-opacity:1;stroke:#ffffff;stroke-width:5.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="path3015" />
+      <path
+         id="path3065"
+         d="m 60.126569,14.816666 -5.55625,45.24375"
+         style="display:inline;fill:#fffaff;fill-opacity:1;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         style="display:inline;fill:#fffaff;fill-opacity:1;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 79.176581,14.816665 -5.55625,45.243751"
+         id="path3065-2" />
+      <path
+         id="path3065-2-8"
+         d="m 69.651575,14.816666 -5.55625,45.243753"
+         style="display:inline;fill:#fffaff;fill-opacity:1;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         style="display:inline;fill:#fffaff;fill-opacity:1;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="M 88.17242,14.816665 82.61617,60.060418"
+         id="path3065-2-8-3" />
+      <path
+         style="display:inline;fill:#fffaff;fill-opacity:1;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 51.13073,14.816666 -5.55625,45.24375"
+         id="path3065-3" />
+      <path
+         id="path3132"
+         d="M 91.876586,57.943749 V 99.483333"
+         style="fill:#fffaff;fill-opacity:1;stroke:#ffffff;stroke-width:2.11674;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>
