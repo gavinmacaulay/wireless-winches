@@ -177,22 +177,20 @@ The poles are telescopic and made either of a 50/50 mix of carbon fibre and fibr
 
 == Communication messages
 
-The message broadcast from the hand controller to the winches consists of a single string containing six ASCII characters. Optionally, the message can contain eight characters - these extra two characters are used to configure the winch.
+The hand controller broadcasts a message to the winches, consisting of a single string containing six ASCII characters. Optionally, the message can contain two extra characters that are used to configure a winch. The meaning of the characters are:
 
-The first three characters specify the required winch motion for each winch (first character for winch 1, second for winch 2 and the third for winch 3). The value of each character is `0`, `1`, or `2`. `0` means to stop the winch, `1` to pay out line, and `2` to take in line. 
-
-Characters four to six are interpreted as an integer number between 0 and 255 that gives the position of the speed dial. 
-
-Character 7 is a command code. The only value accepted to date is `z`, used to tell a winch to zero the line out counter. If `z` is sent, character 8 specifies which winch the reset applies to (i.e., `1`, `2`, or `3`). When the line out is zeroed, that winch will stop rotating, the line out will be set to zero, a status message will be sent to the Android app, and then any speed/direction commands in the message for that winch will be acted upon.
+* Characters one to three specify the required winch motion for each winch (first character for winch 1, second for winch 2 and the third for winch 3). The value of each character is `0`, `1`, or `2`. `0` means to stop the winch, `1` to pay out line, and `2` to take in line. 
+* Characters four to six are interpreted as an integer number between 0 and 255 that gives the position of the speed dial. 
+* Character 7 is a command code. The only value accepted to date is `z`, used to tell a winch to zero the line out counter. If `z` is sent, character 8 specifies which winch the reset applies to (i.e., `1`, `2`, or `3`). When the line out is zeroed, that winch will stop rotating, the line out will be set to zero, a status message will be sent to the Android app, and then any speed/direction commands in the message for that winch will be acted upon.
 
 Some examples: 
 
-* `000105` will ensure that all winches are stopped.
+* `000105` will ensure that all winches are stopped. The speed potentiometer is set to a little under half speed.
 * `011000` will cause winches 2 and 3 to pay line out at the minimum speed.
-* `20125500` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate. As the 7th character is not `z``, then the last two characters will have no effect.
-* `201255z2` will cause the line counter for winch 2 to be zeroed.
+* `20125500` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate. As the 7th character is not `z``, the last two characters will have no effect.
+* `201128z2` will cause the line counter for winch 2 to be zeroed, winch 1 to take line in, and winch 3 to pay line out, both at half speed.
 
-A winch status message is sent by each winch unit back to the controller, which sends it out over the Bluetooth Low Energy communication link (using the Xbee3 User Data Frame mechanism). An Android app is available that uses these messages to show winch status information. The message is a comma separated ASCII string in the form:
+A winch status message is sent by each winch unit back to the controller, which sends it out over the Bluetooth Low Energy communication link (using the Xbee3 User Data Frame mechanism). An Android app is available that uses these messages to show winch status information. This message is a comma separated ASCII string in the form:
 
 `w,v.v,t,pp.pp,ss.ss`
 
@@ -210,7 +208,7 @@ where the fields indicate:
 
 A negative line paid out value indicates the line has been taken in more than paid out. A negative line speed indicates the line is being taken in.
 
-The Android app can send two-byte commands to the hand controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the message). This is current used to tell the winches to reset their line counter.
+The Android app can send two-byte commands to the hand controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the message). This is currently used to tell the winches to reset their line counters.
 
 == Assembling/disassembling the winch unit
 
