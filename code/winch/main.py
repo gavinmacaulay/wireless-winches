@@ -37,6 +37,13 @@ class TicXbee(object):
 
         return bytearray(result)
 
+    def get_velocity(self):  # noqa
+        # Get velocity
+        v = tic.get_variables(0x26, 4)  # signed 32-bit
+        v = int.from_bytes(v[0:4], 'little')  # microsteps per 10000s
+        v = -1 * twos_complement(v, 32)
+        return v
+
     def set_velocity(self, velocity, step_mode):  # noqa
         # A 32-bit write for the velocity
         self.send_command(0xE3, self.encode_32bit(velocity))
@@ -239,10 +246,8 @@ while True:
         if (action == 'z') and (winch_id == str(winch)):
             # get winch speed to zero first
             tic.set_velocity(0, step_mode)  # might be already, but just in case...
-            (vin, pos_actual, velocity_actual, t) = get_status()
-            while velocity_actual != 0:
+            while tic.get_velocity() != 0:
                 utime.sleep_ms(100)
-                (vin, pos_actual, velocity_actual, t) = get_status()
 
             tic.halt_and_set_position(0)
             pos_offset = 0.0
@@ -271,7 +276,7 @@ while True:
         # stationary. Only do this when the motor is actually stationary, and
         # when going from stationary to moving, increase the current before
         # moving the motor.
-
+        velocity_actual = tic.get_velocity()
         if (velocity_req == 0) and (velocity_actual == 0):
             current_limit = current_limit_stationary
         else:
