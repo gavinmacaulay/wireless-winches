@@ -84,6 +84,8 @@ The hand controller and winches automatically form a wireless mesh network that 
 
 The hand controller can function as a range extender - to activate this, move the mode switch on the end of the hand controller to ``Extender``. The LED on the end of the unit will then flash red instead of green. Multiple range extenders can be used if necessary. When in extender mode, none of the winch controls on that controller are operational.
 
+WARNING: The winch units are watertight, but the batteries are not. If using the winches in wet weather, secure a plastic bag over the battery/battery clip part of the winch (a thick rubber band works well to hold it in place).
+
 === Controlling the winches
 
 Individual winches can be controlled using the three in/out switches on the hand controller. The speed of the winches is controlled using the dial. The slowest speed is 20 mm/s and the fastest 1 m/s. Multiple winches can be operated at the same time.
@@ -94,7 +96,7 @@ The in/out switches are configured to pay out line when the inner side of the sw
 
 NOTE: It is easy to operate the winches without observing the winch and this can quickly cause unintentional damage to the winches or the poles (e.g., pulling a line too hard when the line is caught on the hull, paying out line when there is no tension on the line leading to tangles). Experience suggests that until the sphere is visible on the echosounder split-beam display, operation of the winches should be done while observing the winch/pole unit.
 
-NOTE: If both controllers are turned on and set to ``controller`` mode, then both controllers will be sending commands to the winches, and perhaps sending contradictory commands. A typical symptom of this is a winch moving in a struttering manner. 
+NOTE: If both controllers are turned on and set to ``controller`` mode, then both controllers will be sending commands to the winches, perhaps contradictory. A typical symptom of this is a winch moving in a struttering manner (i.e., one controler is telling the winch to rotate while the other is telling it to not rotate). 
 
 === Android app
 
@@ -102,7 +104,7 @@ An app is available on the Google Play Store under the name ``"Aqualyd Winch Sta
 
 The app shows information about the winches, including line out, line speed, battery voltage, and internal winch temperature (<<android_app>>). Battery charge, mode, and serial number of the controller are also shown. The winches remember the current line out value even when the batteries are removed.
 
-The winch line out values can be zeroed (using the ``Zero``button, which applies and offset to make all line out values show as zero). This zeroing can be removed (``Unzero` button`). The winches can also reset their line out counters via the ``Reset`` button in the app. This cannot be undone. The ``save`` button is not yet implemented.
+The winch line out values can be zeroed (using the ``Zero``button, which applies and offset to make all line out values show as zero). This zeroing can be removed (``Unzero` button`). The winches can also reset their line out counters via the ``Reset`` button in the app. This cannot be undone. The ``save`` button is not yet implemented, but will allow for saving (and restoring) of lineout values with a timestamp and comment
 
 .Screenshot from the Android app.
 [[android_app]]
