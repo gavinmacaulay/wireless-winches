@@ -1,28 +1,28 @@
-# Code to run on the Aqualyd echosounder calibration winch wireless control box
+"""Code to run on the Aqualyd echosounder calibration winch wireless control box."""
 
 import machine
 # Status leds. Do these early cause default states of the pin can cause unwanted
 # operation of the leds
 ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
 ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
-from max17048 import max17048
-import utime
-import xbee
-from xbee import relay
+from max17048 import max17048  # noqa
+import utime  # noqa
+import xbee  # noqa
+from xbee import relay  # noqa
 
 # Configurations
 
 # Time between checking controls (also the time between sending messages to the winches)
-pollInterval = 100 # [ms] 
+pollInterval = 100  # [ms]
 
 # Used to do things every x'th time through the main loop
 loopCount = 0
 
 # How often to toggle the status LED
-statusToggleRate = 2 # every nth time through the main loop
+statusToggleRate = 2  # every nth time through the main loop
 
 # How often to measure and send the controller battery voltage
-batteryInterval = 50 # times through the pollInternal loop
+batteryInterval = 50  # times through the pollInternal loop
 
 # Codes that are sent to the receivers
 stop = '0'
@@ -35,9 +35,9 @@ CONTROLLER = 1
 modeText = ['extender', 'controller']
 
 # if there is no battery gauge, we say that it is empty
-bVolt = 0.0 # [V]
-bSOC = 0.0 # [%]
-bCRate = 0.0 # [%/hr]
+bVolt = 0.0  # [V]
+bSOC = 0.0  # [%]
+bCRate = 0.0  # [%/hr]
 
 # This xbee's node identifier
 ident = xbee.atcmd('NI')
@@ -45,33 +45,36 @@ ident = xbee.atcmd('NI')
 # Battery monitoring
 try:
     battery = max17048()
-except:
+except:  # noqa
     battery = None
-    
-# callback for when data is received from the winches
+
+
 def receive_status(m):
-    if m is None: # no new message
+    """Is called when data is received from the winches."""
+    if m is None:  # no new message
         pass
     else:
         # pull out the message from the received data
         status = m['payload'].decode('ascii')
-   
+
     # and send out on Bluetooth
     try:
         relay.send(relay.BLUETOOTH, status)
-    except:
+    except:  # noqa
         pass
 
-# Send on Bluetooth the state of the battery in the controller
+
 def send_self_battery(ident, mode, v, soc, rate):
+    """Send on Bluetooth the state of the battery in the controller."""
     try:
-        relay.send(relay.BLUETOOTH, '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(ident,modeText[mode],v,soc,rate))
-    except:
+        relay.send(relay.BLUETOOTH,
+                   '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(ident, modeText[mode], v, soc, rate))
+    except:  # noqa
         pass
 
-# Set the status LED to indicate the operation mode
-def setStatusLED(mode):
 
+def setStatusLED(mode):
+    """Set the status LED to indicate the operation mode."""
     if mode == CONTROLLER:
         ledGreen.on()
         ledRed.off()
@@ -79,14 +82,15 @@ def setStatusLED(mode):
         ledGreen.off()
         ledRed.on()
 
-# Used to flash the leds on and off
-def flashStatusLED(mode, state):
 
+def flashStatusLED(mode, state):
+    """Use to flash the leds on and off."""
     if mode == CONTROLLER:
         ledGreen.value(state)
-        
+
     if mode == EXTENDER:
         ledRed.value(state)
+
 
 # Disable pins that aren't used.
 machine.Pin(machine.Pin.board.D2, mode=machine.Pin.DISABLED)
@@ -120,50 +124,50 @@ while True:
         while True:
             # work out if we need to change mode
             if (modeSelect.value() != currentMode):
-                loopCount = 0 # will cause a new battery message to be sent to the app
+                loopCount = 0  # will cause a new battery message to be sent to the app
                 if currentMode == CONTROLLER:
                     currentMode = EXTENDER
                     xbee.receive_callback(None)
                 else:
                     currentMode = CONTROLLER
                     xbee.receive_callback(receive_status)
-                    
+
                 setStatusLED(currentMode)
 
             if currentMode == CONTROLLER:
                 # Form the message that will be sent to the receivers
                 s = ''
-                if winch1out.value() == 0: # pulled low by a switch
+                if winch1out.value() == 0:  # pulled low by a switch
                     s += down
                 elif winch1in.value() == 0:
                     s += up
                 else:
                     s += stop
-            
+
                 if winch2out.value() == 0:
                     s += down
                 elif winch2in.value() == 0:
                     s += up
                 else:
                     s += stop
-            
+
                 if winch3out.value() == 0:
                     s += down
                 elif winch3in.value() == 0:
                     s += up
                 else:
                     s += stop
-    
+
                 # Get speed from the potentiometer
                 speed = speedPot.read()
 
                 # The speed ADC is 12 bit, but we only want 8 bits to send to the winches,
-                # so chop off the lower bits (and it removes ADC noise too)                
+                # so chop off the lower bits (and it removes ADC noise too)
                 s += '{:03d}'.format(speed >> 4)
-                
+
                 # The app can generate control messages for the winches, so pass them on.
                 app_msg = relay.receive()
-                if app_msg != None:
+                if app_msg is not None:
                     # Got something from the app
                     app_cmd = app_msg['message'].decode('ascii')
                     if len(app_cmd) == 2:
@@ -176,25 +180,26 @@ while True:
 
             # Measure battery voltage and do LEDs
             if (loopCount % batteryInterval) == 0:
-                if battery != None:
-                    bVolt = battery.getVCell() # [V]
-                    bSOC = battery.getSOC() # [%]
-                    bCRate = battery.getChargeRate() # [%/hr]
-                    if bSOC > 100.0: bSOC = 100.0
+                if battery is not None:
+                    bVolt = battery.getVCell()  # [V]
+                    bSOC = battery.getSOC()  # [%]
+                    bCRate = battery.getChargeRate()  # [%/hr]
+                    if bSOC > 100.0:
+                        bSOC = 100.0
                 send_self_battery(ident, currentMode, bVolt, bSOC, bCRate)
-        
+
             # Turn on the status leds every statusToggleRate time through
             if bSOC > 50.0:
-                statusToggleRate = 2 # flashes every second time through the loop
+                statusToggleRate = 2  # flashes every second time through the loop
             elif bSOC > 25.0:
-                statusToggleRate = 5 # every 5th time
+                statusToggleRate = 5  # every 5th time
             else:
-                statusToggleRate = 10 # every 10th time
-                    
+                statusToggleRate = 10  # every 10th time
+
             if (loopCount % statusToggleRate) == 0:
                 flashStatusLED(currentMode, True)
-                    
-            loopCount+=1
+
+            loopCount += 1
 
             # Wait a bit (also controls how often we send messages to the winches)
             utime.sleep_ms(pollInterval)
@@ -206,4 +211,3 @@ while True:
     except Exception as e:
         # Will appear on the MicroPython terminal, so useful for debugging.
         print(str(e))
-    
