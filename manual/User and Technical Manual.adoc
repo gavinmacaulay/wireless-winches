@@ -31,12 +31,18 @@ This is the User Manual for the Aqualyd wireless echosounder calibration winch s
 
 === Batteries
 
-The batteries (Nokia BL-5C or equivalent) for the hand controllers need to be installed. To do this, remove the silicone case from the hand controllers and then remove the loose half of the case to expose the controller electronics. Remove the strap that sits across the battery holder (you need a screwdriver for this), then insert the battery, taking care to line up the battery terminals. Reinstall the strap and insert and tighten both strap screws.
+The controller batteries (Nokia BL-5C or equivalent) need to be installed. The steps to do this are:
 
-Find the plastic bag containing four screws (will be inside the case), reinstall the controller case halves and use the screws to secure them together. Put the silicone cover back on. Turn the controller on and check on the end of the controller case that an LED is flashing.
+1. Remove the silicone case from the hand controllers.
+2. Remove the loose half of the case to expose the controller electronics.
+3. Remove one of the screws that holds the strap that sits across the battery holder and rotate it out of the way.
+4. Insert the battery, taking care to line up the battery terminals.
+5. Rotate the strap into place and insert and tighten the screw.
+6. Find the plastic bag containing four small black screws, reinstall the controller case halves and screw them together.
+7. Put the silicone cover back on and attach a lanyard strap.
+8. Turn the controller on and check that an LED is flashing on the end of the controller case.
 
-Four Hikoki MultiVolt 36 V power tool batteries and one charger are provided for the winches. These batteries slide vertically down onto the black clip on a winch. Press the gray buttons on the side of the batteries and pull up to remove a battery. 
-
+The winch batteries (Hikoki MultiVolt) slide vertically down onto the black clip on each winch. Press the gray buttons on the side of the batteries and pull up to remove a battery.
 
 === Installation of line on the reels
 
