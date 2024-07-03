@@ -132,9 +132,9 @@ This is the Technical Manual for the Aqualyd wireless echosounder calibration wi
 
 == System description
 
-The overall system consists of two controllers and three winches. Communication between these units occurs via a 2.4 GHz mesh network, provided by Digi XBee3 radio modules. The controller broadcasts a message at 10 Hz that contains the state of all three in/out switches (up, down, stationary) and the potentiometer (0-255). Each winch unit listens to these messages, picks out the relevant in/out switch state and sends speed and direction commands to the motor controller, which operates the stepper model to rotate the winch drum. The relationship between the speed setting on the controller and the actual motor speed is determined by calculations done by the code running in the winch unit. At every 5th broadcast, each winch replies with winch status information which the controller sends via bluetooth to an Android app.
+The overall system consists of two controllers and three winches. Communication between these units occurs via a 2.4 GHz mesh network, provided by Digi XBee3 radio modules. The controller broadcasts a message at 10 Hz that contains the state of all three in/out switches (up, down, stationary) and the potentiometer (0-255). Each winch unit listens to these messages, picks out the relevant in/out switch state and sends speed and direction commands to the motor controller, which operates the stepper model to rotate the winch drum. The relationship between the speed setting on the controller and the actual motor speed is determined by calculations done by the code running in the winch unit. At every 5^th^ broadcast, each winch replies with winch status information which the controller sends via bluetooth to the Android app.
 
-The system is provided in three parts: 1) a transit/storage case that contains the controllers and three winch units,, 2) a transit/storage case with the winch batteries and charges, and 3) a tube that contains three telescopic poles (<<whole_system>>). 
+The system is provided in three parts: 1) a transit/storage case that contains the controllers and three winch units,, 2) a transit/storage case with the winch batteries and chargers, and 3) a tube that contains the three poles (<<whole_system>>). 
 
 .Supplied winch system showing (left) the transit case with included winches and controllers, (centre) the tube containing the poles, and (right) the battery and charger case.
 [[whole_system]]
@@ -146,13 +146,13 @@ The motors are of NEMA 23 size with an integrated 4.25:1 planetary gearbox, supp
 
 The acceleration and decceleration applied when the motor speed is changed is determined by a programmable setting in the Tic T246, as well as the maximum motor speed, and command timeout when no controller messages are received. 
 
-The winches were designed to hold a 6 kg load and are able to lift and lower 6 kg at slow speeds. Operation at higher speeds is only possible with smaller loads. The winch units operate with a 10-40 V DC input, but 36 V is needed to achieve sufficient motor torque to hold a 6 kg line load. 
+The winches were designed to hold a 6 kg load and are able to lift and lower 6 kg at slow speeds. Operation at higher speeds is only possible with smaller loads. The winch units operate with a 10-40 V DC input, but at least 36 V is needed to achieve sufficient motor torque to hold a 6 kg line load. 
 
 === Controller
 
 The controller contains a Digi XBee3 radio module, switches, a potentiometer, a rechargable battery, and a PCB that contains a MAX17048 battery status chip, LED's, and a mode switch. The XBee3 is integrated in a SparkFun Thing Plus XBee3 board (P/N WRL-15454) which provides power to the XBee3 via USB or a Lithium-Polymer battery. Battery management circuitry is also included that will charge the battery when USB power is provided.
 
-A switch on the controller sets whether the controller operates as a controller or as a range extender. In range extender mode the unit sends no control messages to the winches.
+ The mode switch on the controller sets whether the controller operates as a controller or as a range extender. In range extender mode the winch controls are disabled.
 
 === Software
 
@@ -178,7 +178,7 @@ The controller broadcasts a message to the winches, consisting of a single strin
 
 * Characters one to three specify the required winch motion for each winch (first character for winch 1, second for winch 2 and the third for winch 3). The value of each character is `0`, `1`, or `2`. `0` means to stop the winch, `1` to pay out line, and `2` to take in line. 
 * Characters four to six are interpreted as an integer number between 0 and 255 that gives the position of the speed dial. 
-* Character 7 is a command code. The only value accepted to date is `z`, used to tell a winch to zero the line out counter. If `z` is sent, character 8 specifies which winch the reset applies to (i.e., `1`, `2`, or `3`). When the line out is zeroed, that winch will stop rotating, the line out will be set to zero, a status message will be sent to the Android app, and then any speed/direction commands in the message for that winch will be acted upon.
+* Character 7 is a command code. The only value accepted to date is `z`, used to tell a winch to reset to zero the line out counter. If `z` is sent, character 8 specifies which winch the reset applies to (i.e., `1`, `2`, or `3`). When the line out is reset, that winch will stop rotating, the line out value will be set to zero, a status message will be sent to the Android app, and then any speed/direction commands in the message for that winch will be acted upon.
 
 Some examples: 
 
