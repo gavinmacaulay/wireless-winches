@@ -2,8 +2,8 @@
 :author: Aqualyd Limited
 :email: gavin@aqualyd.nz
 :revnumber: 1.3
-:revdata: June 2024
-:sectnums!:
+:revdata: July 2024
+:sectnums:
 :doctype: book
 :toc:
 :toclevels: 4
@@ -33,7 +33,7 @@ This is the User Manual for the Aqualyd wireless echosounder calibration winch s
 
 The controller batteries (Nokia BL-5C or equivalent) need to be installed. The steps to do this are:
 
-1. Remove the silicone case from the hand controllers.
+1. Remove the silicone case from the controllers.
 2. Remove the loose half of the case to expose the controller electronics.
 3. Remove one of the screws that holds the strap that sits across the battery holder and rotate it out of the way.
 4. Insert the battery, taking care to line up the battery terminals.
@@ -46,7 +46,7 @@ The winch batteries (Hikoki MultiVolt) slide vertically down onto the black clip
 
 === Installation of line on the reels
 
-Line should be added to the reels so that the free end leaves from underneath the drum (and away from you) when viewing the unit with the yellow tube to your right. If the direction of the winches does not match the arrows on the hand controller, it is most likely that the line has been wound on the wrong way.
+Line should be added to the reels so that the free end leaves from underneath the drum (and away from you) when viewing the unit with the yellow tube to your right. If the direction of the winches does not match the arrows on the controller, it is most likely that the line has been wound on the wrong way.
 
 == Operating the system
 
@@ -63,42 +63,39 @@ Each winch/pole unit is assembled by:
 7. Pay out line and lead it through the eye-bolt on the outboard end of the pole,
 8. Secure the assembled unit to the vessel,
 
-The winch units are designed to be attached to a pipe or plate railing on a vessel (<<assembled_installed_winch_unit>>):
-
-- A pipe attachment uses the supplied hose clamps to secure the aluminium section of the winch unit to the railing. 
-- A plate attachment uses clamps (user supplied) to secure the winch units' plastic base or the aluminium section to the flat plate. 
-
-NOTE: When extending the telescopic poles do not extend each section beyond the red or blue band and ensure that each pole clip is closed after extending.
-
 .Winch unit installed on a ship's railing showing hose clamps, securing pin, and attachment carabiner.
 [[assembled_installed_winch_unit]]
-image::images/winchUnitInstalled.svg[scaledwidth=14cm,align="center"]
+image::images/winchUnitInstalled.png[scaledwidth=10cm,float="right"]
+
+The winch units are designed to be attached to a pipe or plate railing on a vessel (<<assembled_installed_winch_unit>>). A pipe attachment uses the supplied hose clamps to secure the aluminium section of the winch unit to the railing. A plate attachment uses clamps (user supplied) to secure the winch units' plastic base or the aluminium section to the flat plate. 
 
 The leverage from the extended poles is countered by the cord attachment from the onboard end of the pole to suitable point(s) on the vessel (e.g., a lower railing or gusset)
 
-Each winch is numbered - place the winches in a location that fits with the layout of the numbered switches on the hand controller (<<hand_controller>>). For example, if one pole is at the bow of the vessel and the other two poles on port and starboard side, place winch 1 at the bow, winch 2 to port and winch 3 to starboard. Note that winch 1 holds the long telescopic pole.
+Each winch is numbered - place the winches in a location that fits with the layout of the numbered switches on the controller (<<hand_controller>>). For example, if one pole is at the bow of the vessel and the other two poles on port and starboard side, place winch 1 at the bow, winch 2 to port and winch 3 to starboard. Winch 1 holds the long pole.
 
-To make it easy to relate the three winch switches to the winch locations, rotate the hand controller so that the winch switches approximately match the locations of the winches on the vessel when facing towards the bow. This will often mean holding the winch controller in a landscape orientation.
+To make it easy to relate the three winch switches to the winch locations, rotate the controller so that the winch switches approximately match the locations of the winches on the vessel when facing towards the bow. This will often mean holding the winch controller in a landscape orientation.
 
-.Hand controller showing on/off switch, speed control and winch direction controls.
+.Controller showing on/off switch, speed control and winch direction controls.
 [[hand_controller]]
-image::images/handControllerAnnotated.svg[scaledwidth=8cm,align="center"]
+image::images/handControllerAnnotated.svg[scaledwidth=6cm,float="right"]
 
-WARNING: Avoid rotating the winches by hand - instead, insert a battery and use the hand controller.
+The controller and winches automatically form a wireless mesh network that relays commands from the controller to the winches even if all winches are not reachable directly from the controller. 
 
-The hand controller and winches automatically form a wireless mesh network that relays commands from the hand controller to the winches even if all winches are not reachable directly from the hand controller. 
+The controller can function as a range extender - to activate this, move the mode switch on the end of the controller to ``Extender``. The LED on the end of the unit will then flash red instead of green. Multiple range extenders can be used if necessary. When in extender mode, none of the winch controls on that controller are operational.
 
-The hand controller can function as a range extender - to activate this, move the mode switch on the end of the hand controller to ``Extender``. The LED on the end of the unit will then flash red instead of green. Multiple range extenders can be used if necessary. When in extender mode, none of the winch controls on that controller are operational.
+NOTE: When extending the telescopic poles do not extend each section beyond the red or blue band and ensure that each pole clip is closed after extending.
+
+WARNING: Avoid rotating the winches by hand - instead, insert a battery and use the controller.
 
 WARNING: The winch units are watertight, but the batteries are not. If using the winches in wet weather, secure a plastic bag over the battery/battery clip part of the winch (a thick rubber band works well to hold it in place).
 
 === Controlling the winches
 
-Individual winches can be controlled using the three in/out switches on the hand controller. The speed of the winches is controlled using the dial. The slowest speed is 20 mm/s and the fastest 1 m/s. Multiple winches can be operated at the same time.
+Individual winches can be controlled using the three in/out switches on the controller. The speed of the winches is set with the dial. The slowest speed is 20 mm/s and the fastest 1 m/s. Multiple winches can be operated at the same time.
+
+The in/out switches are configured to pay out line when the inner side of the switch is pressed so that the arrow on the switches points in the direction that the sphere will move when viewed in a split-beam sphere position plot.
 
 WARNING: Only use speeds in the red section of the dial when the weight on the winch is less than about 3 kg.
-
-The in/out switches are configured to pay out line when the inner side of the switch is pressed. In that sense, the arrow on the switches indicates the direction that the sphere will move when viewed in a split-beam echosounder sphere position plot.
 
 NOTE: It is easy to operate the winches without observing the winch and this can quickly cause unintentional damage to the winches or the poles (e.g., pulling a line too hard when the line is caught on the hull, paying out line when there is no tension on the line leading to tangles). Experience suggests that until the sphere is visible on the echosounder split-beam display, operation of the winches should be done while observing the winch/pole unit.
 
@@ -106,36 +103,23 @@ NOTE: If both controllers are turned on and set to ``controller`` mode, then bot
 
 === Android app
 
+.Screenshot from the Android app.
+[[android_app]]
+image::images/app_white_screenshot2.png[scaledwidth=6cm,float="right"]
+
 An app is available on the Google Play Store under the name ``"Aqualyd Winch Status"`` (include the quote marks when searching) or via https://play.google.com/store/apps/details?id=nz.aqualyd.winchStatus. The app requires an Android device running version 9 of Android or later that supports Bluetooth. The app does not provide a way to control the winches. 
 
 The app shows information about the winches, including line out, line speed, battery voltage, and internal winch temperature (<<android_app>>). Battery charge, mode, and serial number of the controller are also shown. The winches remember the current line out value even when the batteries are removed.
 
-The winch line out values can be zeroed (using the ``Zero`` button, which applies an offset to make all line out values show as zero). This zeroing can be removed with the ``Unzero`` button. The winches can also reset their line out counters by pressing the ``Reset`` button in the app. This cannot be undone. The ``Save`` button is not yet implemented, but will allow for saving (and restoring) of line out values with a timestamp and comment.
-
-.Screenshot from the Android app.
-[[android_app]]
-image::images/app_white_screenshot2.png[scaledwidth=6cm,align="center"]
+The displayed winch line outs can be zeroed (using the ``Zero`` button) and removed with the ``Unzero`` button. The winches will reset their line out counters when the ``Reset`` button in pressed. This cannot be undone. The ``Save`` button is not yet implemented, but will allow for saving (and restoring) of line out values with a timestamp and comment.
 
 === Charging the batteries 
 
-The hand controller contains rechargable batteries. To charge this, connect the supplied USB cable to the unit and to a USB power supply (the USB port on a computer is fine) and *turn the controller on*. 
-
-Charging a completely flat battery will take about 4 hours - no harm will occur to the battery if it is connected to the charger for longer than this. A fully charged battery will power the controller for about 20 hours.
+The controller contains a rechargable battery. To charge this, connect a micro USB cable to the unit and to a USB power supply (the USB port on a computer is fine) and *turn the controller on*. Charging a completely flat battery will take about 4 hours and a fully charged battery will work for about 20 hours.
 
 Note that the controller will be operating and transmitting whenever USB power is suppled, but will not charge the battery until the power switch is turned on (the on/off switch connects or disconnects the battery from the system - it does not affect supply of USB power to the controller's electronics). This means that a controller with a flat, faulty, or absent battery can be used normally by connecting USB power - it will operate as per normal and charge the battery if present.
 
-The charge of the controller battery is shown in the app and also via LED's on the end of the controller.
-
-WARNING: Charging will only occur when the on/off switch on the hand controller or range extender is in the on position.
-
-=== Routine maintenance
-
-After each use of the system:
-
-- gently wash down the winches and poles in freshwater
-- separate out the telescopic parts of the poles and allow any internal water to dry before reassembling
-
-NOTE: The winch batteries are best stored in a partially discharged state. It is recommended that the batteries are charged prior to a calibration rather than immediately after a calibration.
+The winch batteries are charged with the supplied Hikoki/Metabo HPT charger. It takes about 30 minutes to fully charge an empty winch battery. 
 
 = Technical Manual
 
@@ -143,41 +127,41 @@ This is the Technical Manual for the Aqualyd wireless echosounder calibration wi
 
 == System description
 
-The overall system consists of two hand controllers and three winches. Communication between these units occurs via a 2.4 GHz mesh network, provided by Digi XBee3 radio modules. The hand controller broadcasts a message at 10 Hz that contains the state of all three in/out switches (up, down, stationary) and the potentiometer (0-255). Each winch unit listens to these messages, picks out the relevant in/out switch state and sends speed and direction commands to the motor controller, which operates the stepper model to rotate the winch drum. The relationship between the speed setting on the hand controller and the actual motor speed is determined by calculations done by the code running in the winch unit. At every 5th broadcast, each winch replies with winch status information which the hand controller sends via bluetooth to an Android app.
+The overall system consists of two controllers and three winches. Communication between these units occurs via a 2.4 GHz mesh network, provided by Digi XBee3 radio modules. The controller broadcasts a message at 10 Hz that contains the state of all three in/out switches (up, down, stationary) and the potentiometer (0-255). Each winch unit listens to these messages, picks out the relevant in/out switch state and sends speed and direction commands to the motor controller, which operates the stepper model to rotate the winch drum. The relationship between the speed setting on the controller and the actual motor speed is determined by calculations done by the code running in the winch unit. At every 5th broadcast, each winch replies with winch status information which the controller sends via bluetooth to an Android app.
 
-The system is provided in three parts: 1) a transit/storage case that contains the hand controllers and three winch units,, 2) a transit/storage case with the winch batteries and charges, and 3) a tube that contains three telescopic poles (<<whole_system>>). 
+The system is provided in three parts: 1) a transit/storage case that contains the controllers and three winch units,, 2) a transit/storage case with the winch batteries and charges, and 3) a tube that contains three telescopic poles (<<whole_system>>). 
 
 .Supplied winch system showing (left) the transit case with included winches and controllers, (centre) the tube containing the poles, and (right) the battery and charger case.
 [[whole_system]]
-image::images/wholeSystem.svg[scaledwidth=18cm,float=right]
+image::images/wholeSystem.png[scaledwidth=18cm,float=right]
 
 === Winches
 
 The motors are of NEMA 23 size with an integrated 4.25:1 planetary gearbox, supplied by StepperOnline (model 23HS30-2804S-PG4). The motor is driven from a Pololu Tic T246 motor controller which is controlled via serial communication with a microPython programm running on the XBee3 radio module in each winch unit.
 
-The acceleration and decceleration applied when the motor speed is changed is determined by a programmable setting in the Tic T246, as well as the maximum motor speed, and command timeout when no hand controller messages are received. 
+The acceleration and decceleration applied when the motor speed is changed is determined by a programmable setting in the Tic T246, as well as the maximum motor speed, and command timeout when no controller messages are received. 
 
 The winches were designed to hold a 6 kg load and are able to lift and lower 6 kg at slow speeds. Operation at higher speeds is only possible with smaller loads. The winch units operate with a 10-40 V DC input, but 36 V is needed to achieve sufficient motor torque to hold a 6 kg line load. 
 
-=== Hand controller
+=== Controller
 
-The hand controller contains a Digi XBee3 radio module, switches, a potentiometer, a rechargable battery, and a PCB that contains a MAX17048 battery status chip, LED's, and a mode switch. The XBee3 is integrated in a SparkFun Thing Plus XBee3 board (P/N WRL-15454) which provides power to the XBee3 via USB or a Lithium-Polymer battery. Battery management circuitry is also included that will charge the battery when USB power is provided.
+The controller contains a Digi XBee3 radio module, switches, a potentiometer, a rechargable battery, and a PCB that contains a MAX17048 battery status chip, LED's, and a mode switch. The XBee3 is integrated in a SparkFun Thing Plus XBee3 board (P/N WRL-15454) which provides power to the XBee3 via USB or a Lithium-Polymer battery. Battery management circuitry is also included that will charge the battery when USB power is provided.
 
-A switch on the hand controller sets whether the hand controller operates as a controller or as a range extender. In range extender mode the unit sends no control messages to the winches.
+A switch on the controller sets whether the controller operates as a controller or as a range extender. In range extender mode the unit sends no control messages to the winches.
 
 === Software
 
-The hand controller runs a microPython program on the XBee3 module to translate buttons presses and speed setting into the message that is broadcast to the winches. The XBee3 in each winch also runs a microPython program that receives these messages, decodes them and sends motor speed and direction commands to the motor controller. The code that runs on these XBee3 modules is available on https://github.com/gavinmacaulay/wireless-winches.git[github].
+The controller runs a microPython program on the XBee3 module to translate buttons presses and speed setting into the message that is broadcast to the winches. The XBee3 in each winch also runs a microPython program that receives these messages, decodes them and sends motor speed and direction commands to the motor controller. The code that runs on these XBee3 modules is available on https://github.com/gavinmacaulay/wireless-winches.git[github].
 
-Uploading the microPython code to the XBee3 module in the hand controller is done via the USB connector on the hand controller. Uploading to the XBee3 module in the winches requires a separate board that provides serial communication access to the Xbee3 (e.g. an XBee Grove Development Board). Modifying the parameters in the Pololu motor controller can be done via the USB connector on the Pololu unit. 
+Uploading the microPython code to the XBee3 module in the controller is done via the USB connector on the controller. Uploading to the XBee3 module in the winches requires a separate board that provides serial communication access to the Xbee3 (e.g. an XBee Grove Development Board). Modifying the parameters in the Pololu motor controller can be done via the USB connector on the Pololu unit. 
 
 === Changing winch identification
 
 Changing the winch identification may be necessary when replacing a faulty winch. 
 
-Each winch has an identification number (1, 2, 3). This is used by each winch to select the appropriate part of the message sent by the hand controller. This number is stored in the NI parameter in the XBee3 unit and is read when powering up. Changing this number can be done using the Digi XCTU software (via USB) or the Digi XBee mobile app (via Bluetooth). The Bluetooth password is *aqualyd*.
+Each winch has an identification number (1, 2, 3). This is used by each winch to select the appropriate part of the message sent by the controller. This number is stored in the NI parameter in the XBee3 unit and is read when powering up. Changing this number can be done using the Digi XCTU software (via USB) or the Digi XBee mobile app (via Bluetooth). The Bluetooth password is *aqualyd*.
 
-Note that the hand controller only sends out messages to winches with identification codes of 1, 2, or 3. If the winch NI parameter is set to any other value that winch will not act on any commands from the hand controller.
+Note that the controller only sends out messages to winches with identification codes of 1, 2, or 3. If the winch NI parameter is set to any other value that winch will not act on any commands from the controller.
 
 === Poles
 
@@ -185,7 +169,7 @@ The poles are telescopic and made either of a 50/50 mix of carbon fibre and fibr
 
 == Communication messages
 
-The hand controller broadcasts a message to the winches, consisting of a single string containing six ASCII characters. Optionally, the message can contain two extra characters that are used to configure a winch. The meaning of the characters are:
+The controller broadcasts a message to the winches, consisting of a single string containing six ASCII characters. Optionally, the message can contain two extra characters that are used to configure a winch. The meaning of the characters are:
 
 * Characters one to three specify the required winch motion for each winch (first character for winch 1, second for winch 2 and the third for winch 3). The value of each character is `0`, `1`, or `2`. `0` means to stop the winch, `1` to pay out line, and `2` to take in line. 
 * Characters four to six are interpreted as an integer number between 0 and 255 that gives the position of the speed dial. 
@@ -209,14 +193,14 @@ where the fields indicate:
 |Field|Content|Decimal places|Units
 |w|Winch identification (1, 2, or 3)||
 |v.v|Battery voltage|1|V
-|t|Winch internal temperature|0|&deg;C
+|t|Winch internal temperature|0|&#176;C
 |pp.pp|Line paid out (can include leading negative sign)|2|m
 |ss.ss|Line speed (can include leading negative sign)|2|m s^-1^
 |===
 
 A negative line paid out value indicates the line has been taken in more than paid out. A negative line speed indicates the line is being taken in.
 
-The Android app can send two-byte commands to the hand controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the message). This is currently used to tell the winches to reset their line counters.
+The Android app can send two-byte commands to the controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the message). This is currently used to tell the winches to reset their line counters.
 
 == Assembling/disassembling the winch unit
 
@@ -256,7 +240,7 @@ tbc
 |DigiMesh network channel|0x1A|
 |DigiMesh wireless channel|26 (2480 MHz)|
 |||
-|Hand controller/range extender battery|Nokia BL-5C|
+|Controller battery|Nokia BL-5C|
 |Battery chemistry|Lithium Ion|
 |Battery voltage|3.7|V
 |Battery rating|1.05|Ah
@@ -277,7 +261,7 @@ A wireless system consists of the following components:
 |Winch unit (for long pole)|1
 |Winch batteries|4
 |Winch battery charger|1
-|Hand controller|2
+|Controller|2
 |Short pole|2
 |Long pole|1
 |Pole attachment cord with carabiner|4
