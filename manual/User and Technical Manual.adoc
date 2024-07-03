@@ -10,6 +10,7 @@
 :xrefstyle: short
 :imagesdir: .
 :chapter-label:
+:!chapter-signifier:
 :hide-uri-scheme:
 
 [colophon]
@@ -75,9 +76,9 @@ Each winch is numbered - place the winches in a location that fits with the layo
 
 To make it easy to relate the three winch switches to the winch locations, rotate the controller so that the winch switches approximately match the locations of the winches on the vessel when facing towards the bow. This will often mean holding the winch controller in a landscape orientation.
 
-.Controller showing on/off switch, speed control and winch direction controls.
+.Controller functions.
 [[hand_controller]]
-image::images/handControllerAnnotated.svg[scaledwidth=6cm,float="right"]
+image::images/handControllerAnnotated.svg[scaledwidth=8cm,float="right"]
 
 The controller and winches automatically form a wireless mesh network that relays commands from the controller to the winches even if all winches are not reachable directly from the controller. 
 
@@ -107,11 +108,15 @@ NOTE: If both controllers are turned on and set to ``controller`` mode, then bot
 [[android_app]]
 image::images/app_white_screenshot2.png[scaledwidth=6cm,float="right"]
 
-An app is available on the Google Play Store under the name ``"Aqualyd Winch Status"`` (include the quote marks when searching) or via https://play.google.com/store/apps/details?id=nz.aqualyd.winchStatus. The app requires an Android device running version 9 of Android or later that supports Bluetooth. The app does not provide a way to control the winches. 
+An app is available on the Google Play Store under the name ``Aqualyd Winch Status``, via this https://play.google.com/store/apps/details?id=nz.aqualyd.winchStatus[URL], or the QR code below. 
 
-The app shows information about the winches, including line out, line speed, battery voltage, and internal winch temperature (<<android_app>>). Battery charge, mode, and serial number of the controller are also shown. The winches remember the current line out value even when the batteries are removed.
+The app requires an Android device running version 9 of Android or later that also supports Bluetooth. The app does not provide a way to control the winches. 
 
-The displayed winch line outs can be zeroed (using the ``Zero`` button) and removed with the ``Unzero`` button. The winches will reset their line out counters when the ``Reset`` button in pressed. This cannot be undone. The ``Save`` button is not yet implemented, but will allow for saving (and restoring) of line out values with a timestamp and comment.
+The app shows line out, line speed, battery voltage, and internal winch temperature for each winch (<<android_app>>). Controller battery charge, mode, and serial number are also shown. The winch battery voltage number turns red when a battery need charging.
+
+The displayed line out values can be zeroed (using the ``Zero`` button) and restored with the ``Unzero`` button. The winches will reset their line out counters when the ``Reset`` button in pressed. This cannot be undone. The winches remember the current line out value even when the batteries are removed, so a ``Reset`` is the only way to force the line counters to be zero. The ``Save`` button is not yet implemented, but will allow for saving (and restoring) of line out values with a timestamp and comment. 
+
+image:images/androidAppQR.png[scaledwidth=2cm, float="centre"]
 
 === Charging the batteries 
 
@@ -202,18 +207,6 @@ A negative line paid out value indicates the line has been taken in more than pa
 
 The Android app can send two-byte commands to the controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the message). This is currently used to tell the winches to reset their line counters.
 
-== Assembling/disassembling the winch unit
-
-tbc
-
-=== Access to winch electronics
-
-tbc
-
-=== Removing the drum and bearings
-
-tbc
-
 [appendix]
 == Specifications
 
@@ -245,6 +238,12 @@ tbc
 |Battery voltage|3.7|V
 |Battery rating|1.05|Ah
 |Battery rating|3.8|Wh
+|||
+|Winch battery|Hikoki/Metabo HPT MultiVolt BSL36A18X|
+|Battery chemistry|Lithium Ion|
+|Battery voltage|36|V
+|Battery rating|2.5|Ah
+|Battery rating|90|Wh
 |===
 
 [appendix]
@@ -259,14 +258,14 @@ A wireless system consists of the following components:
 |Transit/storage tube for poles|1
 |Winch unit (for short pole)|2
 |Winch unit (for long pole)|1
-|Winch batteries|4
-|Winch battery charger|1
-|Controller|2
 |Short pole|2
 |Long pole|1
 |Pole attachment cord with carabiner|4
 |Pole attachment eyebolt|3
+|Winch batteries|4
+|Winch battery charger|1
+|Controller|2
 |Controller charging cord (USB)|1
-|User & Technical manual|1
+|User & Technical manual (online)|1
 |Hose clamps (46-70 mm diameter)|6
 |===
