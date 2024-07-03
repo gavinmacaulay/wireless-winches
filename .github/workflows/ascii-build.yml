@@ -23,14 +23,12 @@ jobs:
     - name: build manuals
       run: |
         asciidoctor-pdf "User and Technical Manual.adoc"
-        asciidoctor-pdf "upgrade instructions.adoc"
       working-directory: manual
     
     - name: move to generated-docs folder
       run: |
         mkdir -p generated-docs
         mv "manual/User and Technical Manual.pdf" generated-docs/
-        mv "manual/upgrade instructions.pdf" generated-docs/
         
     - name: Git stuff
       run: |
@@ -39,7 +37,6 @@ jobs:
         git config --local user.name "aqualyd-github-bot"
         git status
         git add "generated-docs/User and Technical Manual.pdf"
-        git add "generated-docs/upgrade instructions.pdf"
         git commit --allow-empty -m "Push triggered asciidoc build"
         
     - name: Push changes
