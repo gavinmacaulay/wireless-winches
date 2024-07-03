@@ -43,7 +43,7 @@ The controller batteries (Nokia BL-5C or equivalent) need to be installed. The s
 7. Put the silicone cover back on and attach a lanyard strap.
 8. Turn the controller on and check that an LED is flashing on the end of the controller case.
 
-The winch batteries (Hikoki MultiVolt) slide vertically down onto the black clip on each winch. Press the gray buttons on the side of the batteries and pull up to remove a battery.
+The winch batteries (Hikoki/Metabo HPT MultiVolt) slide vertically down onto the black clip on each winch. Press the gray buttons on the side of the batteries and pull up to remove a battery.
 
 === Installation of line on the reels
 
@@ -53,13 +53,13 @@ Line should be added to the reels so that the free end leaves from underneath th
 
 === Installing the winches and poles
 
-Each winch/pole unit is assembled by:
+Assemble each winch/pole as per this list:
 
-1. Inserting a telescopic pole into the yellow tube on each winch unit (orient the pole so that the brand names is uppermost), 
-2. Extending the telescopic pole to the desired length,
-3. Aligning the holes in the yellow tube and pole and inserting the locking pin (the pole will extend about 200 mm inboard from the yellow tube),
-4. Inserting the supplied eye-bolt into the hole in the onboard end of the pole,
-5. Attaching a tie-down cord to each eye-bolt using the attached carabiner,
+1. Insert a telescopic pole into the yellow tube on each winch unit (orient the pole so that the brand names is uppermost), 
+2. Extend the telescopic pole to the desired length,
+3. Align the holes in the yellow tube and pole and inserting the locking pin (the pole will extend about 200 mm inboard from the yellow tube),
+4. Insert the supplied eye-bolt into the hole in the onboard end of the pole,
+5. Attach a tie-down cord to each eye-bolt using the attached carabiner,
 6. Insert a battery into the winch unit
 7. Pay out line and lead it through the eye-bolt on the outboard end of the pole,
 8. Secure the assembled unit to the vessel,
@@ -70,11 +70,11 @@ image::images/winchUnitInstalled.png[scaledwidth=10cm,float="right"]
 
 The winch units are designed to be attached to a pipe or plate railing on a vessel (<<assembled_installed_winch_unit>>). A pipe attachment uses the supplied hose clamps to secure the aluminium section of the winch unit to the railing. A plate attachment uses clamps (user supplied) to secure the winch units' plastic base or the aluminium section to the flat plate. 
 
-The leverage from the extended poles is countered by the cord attachment from the onboard end of the pole to suitable point(s) on the vessel (e.g., a lower railing or gusset)
+The leverage from the extended poles is countered by the cord attachment from the inboard end of the pole to suitable point(s) on the vessel (e.g., a lower railing or gusset).
 
 Each winch is numbered - place the winches in a location that fits with the layout of the numbered switches on the controller (<<hand_controller>>). For example, if one pole is at the bow of the vessel and the other two poles on port and starboard side, place winch 1 at the bow, winch 2 to port and winch 3 to starboard. Winch 1 holds the long pole.
 
-To make it easy to relate the three winch switches to the winch locations, rotate the controller so that the winch switches approximately match the locations of the winches on the vessel when facing towards the bow. This will often mean holding the winch controller in a landscape orientation.
+To make it easy to relate the three winch switches to the winch locations, rotate the controller so that the switches approximately match the locations of the winches on the vessel when facing the echosounders' split-beam display. This will often mean holding the winch controller in a landscape orientation.
 
 .Controller functions.
 [[hand_controller]]
@@ -94,13 +94,13 @@ WARNING: The winch units are watertight, but the batteries are not. If using the
 
 Individual winches can be controlled using the three in/out switches on the controller. The speed of the winches is set with the dial. The slowest speed is 20 mm/s and the fastest 1 m/s. Multiple winches can be operated at the same time.
 
-The in/out switches are configured to pay out line when the inner side of the switch is pressed so that the arrow on the switches points in the direction that the sphere will move when viewed in a split-beam sphere position plot.
+The in/out switches are configured to pay out line when the inner side of the switch is pressed - the arrows on the switches point in the direction that the sphere will move when viewed in a split-beam sphere position plot.
 
-WARNING: Only use speeds in the red section of the dial when the weight on the winch is less than about 3 kg.
+WARNING: Only use speeds in the red section of the dial when the weight on the winch is less than about 1.5 kg.
 
 NOTE: It is easy to operate the winches without observing the winch and this can quickly cause unintentional damage to the winches or the poles (e.g., pulling a line too hard when the line is caught on the hull, paying out line when there is no tension on the line leading to tangles). Experience suggests that until the sphere is visible on the echosounder split-beam display, operation of the winches should be done while observing the winch/pole unit.
 
-NOTE: If both controllers are turned on and set to ``controller`` mode, then both controllers will be sending commands to the winches, perhaps contradictory. A typical symptom of this is a winch moving in a struttering manner (i.e., one controler is telling the winch to rotate while the other is telling it to not rotate). 
+NOTE: If both controllers are turned on and set to ``controller`` mode, then both controllers will be sending potentially contradictory commands to the winches. A typical symptom of this is a winch moving in a struttering manner (i.e., one controler is telling the winch to rotate while the other is telling it to not rotate). 
 
 === Android app
 
@@ -114,13 +114,13 @@ The app requires an Android device running version 9 of Android or later that al
 
 The app shows line out, line speed, battery voltage, and internal winch temperature for each winch (<<android_app>>). Controller battery charge, mode, and serial number are also shown. The winch battery voltage number turns red when a battery need charging.
 
-The displayed line out values can be zeroed (using the ``Zero`` button) and restored with the ``Unzero`` button. The winches will reset their line out counters when the ``Reset`` button in pressed. This cannot be undone. The winches remember the current line out value even when the batteries are removed, so a ``Reset`` is the only way to force the line counters to be zero. The ``Save`` button is not yet implemented, but will allow for saving (and restoring) of line out values with a timestamp and comment. 
+The displayed line out values can be zeroed (using the ``Zero`` button) and restored with the ``Unzero`` button. The winches will reset their line out counters when the ``Reset`` button in pressed. This cannot be undone. The winches remember the current line out value even when the batteries are removed, so a ``Reset`` is the only way to force the winches' line counters to be zero. The ``Save`` button is not yet implemented, but will eventually allow for saving (and restoring) of line out values along with with a timestamp and label. 
 
 image:images/androidAppQR.png[scaledwidth=2cm, float="centre"]
 
 === Charging the batteries 
 
-The controller contains a rechargable battery. To charge this, connect a micro USB cable to the unit and to a USB power supply (the USB port on a computer is fine) and *turn the controller on*. Charging a completely flat battery will take about 4 hours and a fully charged battery will work for about 20 hours.
+The controller contains a rechargable battery. To charge this, connect a micro USB cable to the unit and to a USB power supply (the USB port on a computer is fine - there is also a USB port on the Hikoki/Metabo HPT charger) and *turn the controller on*. Charging a completely flat battery will take about 4 hours and a fully charged battery will work for about 20 hours.
 
 Note that the controller will be operating and transmitting whenever USB power is suppled, but will not charge the battery until the power switch is turned on (the on/off switch connects or disconnects the battery from the system - it does not affect supply of USB power to the controller's electronics). This means that a controller with a flat, faulty, or absent battery can be used normally by connecting USB power - it will operate as per normal and charge the battery if present.
 
