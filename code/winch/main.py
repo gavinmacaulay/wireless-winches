@@ -8,6 +8,17 @@ from machine import Pin
 from machine import WDT
 from micropython import kbd_intr
 from store_value import storeValue
+from machine import I2C
+
+ticAddr = 14  # i2c bus address for the motor controller
+
+# Work out which comms channel to use
+uart = True  # Use the UART to control the motor controller
+i2c = I2C(1, freq=100000)
+devices = i2c.scan()
+if ticAddr in devices:
+    uart = False  # use i2c to control the motor controller
+    print('Using i2c - motor controller detected on the bus.')
 
 
 class TicXbee(object):
@@ -16,7 +27,10 @@ class TicXbee(object):
     def __init__(self):
         # Get the winch id
         self.addr = int(xbee.atcmd('NI')[-1])
-        kbd_intr(-1)  # ignore Ctrl-C (0x03) on UART
+        if uart:
+            kbd_intr(-1)  # ignore Ctrl-C (0x03) on UART
+        else:
+            self.i2c = I2C(1, freq=100000)
 
     def send_command(self, cmd, data_bytes):  # noqa
         # data_byes should be an iterable data structure
@@ -25,17 +39,23 @@ class TicXbee(object):
         if data_bytes:
             buf.extend(bytes(data_bytes))
 
-        stdout.buffer.write(buf)
+        if uart:
+            stdout.buffer.write(buf)
+        else:
+            self.i2c.writeto(ticAddr, buf)
 
     def get_variables(self, offset, length):  # noqa
-        self.send_command(0xA1, [offset, length])
 
-        result = stdin.buffer.read(length)
+        if uart:
+            self.send_command(0xA1, [offset, length])
+            result = stdin.buffer.read(length)
+            if result is None:
+                result = bytearray([])
+        else:
+            self.i2c.writeto(ticAddr, bytes([0xA1, offset]))
+            result = self.i2c.readfrom(ticAddr, length)
 
-        if result is None:
-            result = []
-
-        return bytearray(result)
+        return result
 
     def get_velocity(self):  # noqa
         # Get velocity
@@ -73,12 +93,18 @@ class TicXbee(object):
         self.send_command(0xEC, self.encode_32bit(pos))
 
     def encode_32bit(self, v):  # noqa
-        return [((v >> 7) & 1) | ((v >> 14) & 2) |
-                ((v >> 21) & 4) | ((v >> 28) & 8),
-                v >> 0 & 0x7F,
-                v >> 8 & 0x7F,
-                v >> 16 & 0x7F,
-                v >> 24 & 0x7F]
+        if uart:
+            return [((v >> 7) & 1) | ((v >> 14) & 2) |
+                    ((v >> 21) & 4) | ((v >> 28) & 8),
+                    v >> 0 & 0x7F,
+                    v >> 8 & 0x7F,
+                    v >> 16 & 0x7F,
+                    v >> 24 & 0x7F]
+        else:
+            return [v >> 0 & 0xFF,
+                    v >> 8 & 0xFF,
+                    v >> 16 & 0xFF,
+                    v >> 24 & 0xFF]
 
 def twos_complement(value, bitWidth):  # noqa
 
