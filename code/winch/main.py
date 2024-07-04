@@ -29,6 +29,8 @@ class TicXbee(object):
             kbd_intr(-1)  # ignore Ctrl-C (0x03) on UART
         else:
             self.i2c = I2C(1, freq=100000)
+        self.max_payload_len = int(xbee.atcmd('NP'))  # for sending over the air
+
 
     def send_command(self, cmd, data_bytes):  # noqa
         # data_byes should be an iterable data structure
@@ -144,7 +146,7 @@ class TicXbee(object):
             pass
 
         data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
-        if len(data) > max_payload_len:
+        if len(data) > self.max_payload_len:
             data = '{},error - message too long'.format(winch)
 
         # send to whoever sent the most recent message we received
@@ -200,8 +202,6 @@ step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
 # speed as a signed 32 bit integer. Use array instead of list,
 # for efficiency (as per micropython guidelines)
 speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(0, speed_steps)])
-
-max_payload_len = int(xbee.atcmd('NP'))  # for sending over the air
 
 tic = TicXbee()
 
