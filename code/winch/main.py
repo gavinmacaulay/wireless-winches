@@ -4,11 +4,9 @@ import xbee
 import array
 import utime
 from sys import stdin, stdout
-from machine import Pin
-from machine import WDT
+from machine import WDT, I2C
 from micropython import kbd_intr
 from store_value import storeValue
-from machine import I2C
 
 ticAddr = 14  # i2c bus address for the motor controller
 
@@ -34,7 +32,6 @@ class TicXbee(object):
 
     def send_command(self, cmd, data_bytes):  # noqa
         # data_byes should be an iterable data structure
-
         buf = bytearray([cmd])
         if data_bytes:
             buf.extend(bytes(data_bytes))
@@ -45,7 +42,6 @@ class TicXbee(object):
             self.i2c.writeto(ticAddr, buf)
 
     def get_variables(self, offset, length):  # noqa
-
         if uart:
             self.send_command(0xA1, [offset, length])
             result = stdin.buffer.read(length)
@@ -54,14 +50,13 @@ class TicXbee(object):
         else:
             self.i2c.writeto(ticAddr, bytes([0xA1, offset]))
             result = self.i2c.readfrom(ticAddr, length)
-
         return result
 
     def get_velocity(self):  # noqa
         # Get velocity
         v = tic.get_variables(0x26, 4)  # signed 32-bit
         v = int.from_bytes(v[0:4], 'little')  # microsteps per 10000s
-        v = -1 * twos_complement(v, 32)
+        v = -1 * self.twos_complement(v, 32)
         return v
 
     def set_velocity(self, velocity, step_mode):  # noqa
@@ -106,59 +101,57 @@ class TicXbee(object):
                     v >> 16 & 0xFF,
                     v >> 24 & 0xFF]
 
-def twos_complement(value, bitWidth):  # noqa
+    def twos_complement(self, value, bitWidth):  # noqa
 
-    if value >= 2**bitWidth:
-        return value  # should raise an exception
-    else:
-        return value - int((value << 1) & 2**bitWidth)
+        if value >= 2**bitWidth:
+            return value  # should raise an exception here...
+        else:
+            return value - int((value << 1) & 2**bitWidth)
 
-def get_status():  # noqa
-    # Get input voltage
-    vin_bytes = tic.get_variables(0x33, 2)  # [mV], unsigned 16-bit
-    vin = int.from_bytes(vin_bytes, 'little') / 1000
+    def get_status(self):  # noqa
+        # Get input voltage
+        vin_bytes = self.get_variables(0x33, 2)  # [mV], unsigned 16-bit
+        vin = int.from_bytes(vin_bytes, 'little') / 1000
 
-    # Get position & velocity
-    state = tic.get_variables(0x22, 8)  # 2 x signed 32-bit
+        # Get position & velocity
+        state = self.get_variables(0x22, 8)  # 2 x signed 32-bit
 
-    position = int.from_bytes(state[0:4], 'little')  # microsteps
-    position = -1 * twos_complement(position, 32)
+        position = int.from_bytes(state[0:4], 'little')  # microsteps
+        position = -1 * self.twos_complement(position, 32)
 
-    velocity = int.from_bytes(state[4:8], 'little')  # microsteps per 10000s
-    velocity = -1 * twos_complement(velocity, 32)
+        velocity = int.from_bytes(state[4:8], 'little')  # microsteps per 10000s
+        velocity = -1 * self.twos_complement(velocity, 32)
 
-    # Get Xbee internal temperature
-    xbee_temp = int(xbee.atcmd('TP'))  # 2's complement
-    if xbee_temp > 0x7FFF:
-        xbee_temp = xbee_temp - 0x10000
+        # Get Xbee internal temperature
+        xbee_temp = int(xbee.atcmd('TP'))  # 2's complement
+        if xbee_temp > 0x7FFF:
+            xbee_temp = xbee_temp - 0x10000
 
-    return (vin, position, velocity, xbee_temp)
+        return (vin, position, velocity, xbee_temp)
 
 
-def get_and_send_status():  # noqa
-    # Get winch status and send it to the controller
-    (vin, pos_actual, velocity_actual, t) = get_status()
-    v_physical = velocity_actual * pulses_factor_speed  # [m/s]
+    def get_and_send_status(self):  # noqa
+        # Get winch status and send it to the controller
+        (vin, pos_actual, velocity_actual, t) = self.get_status()
+        v_physical = velocity_actual * pulses_factor_speed  # [m/s]
 
-    p_physical = pos_actual * pulses_factor_position + pos_offset  # [m]
-    try:
-        # This value only gets used on startup, when pos_actual is zero, so storing
-        # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
-        pos_store.put(p_physical)
-    except Exception as e:
-        pass
+        p_physical = pos_actual * pulses_factor_position + pos_offset  # [m]
+        try:
+            # This value only gets used on startup, when pos_actual is zero, so storing
+            # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
+            pos_store.put(p_physical)
+        except Exception as e:  # noqa
+            pass
 
-    data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
-    if len(data) > max_payload_len:
-        data = '{},error - message too long'.format(winch)
+        data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
+        if len(data) > max_payload_len:
+            data = '{},error - message too long'.format(winch)
 
-    # send to whoever sent the most recent message we received
-    try:
-        led.value(True)
-        xbee.transmit(sender_addr, data)
-        led.value(False)
-    except Exception as e:
-        pass
+        # send to whoever sent the most recent message we received
+        try:
+            xbee.transmit(sender_addr, data)
+        except Exception as e:  # noqa
+            pass
 
 
 # Config variables
@@ -208,7 +201,6 @@ step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
 # for efficiency (as per micropython guidelines)
 speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(0, speed_steps)])
 
-led = Pin(Pin.board.D10, Pin.OUT)
 max_payload_len = int(xbee.atcmd('NP'))  # for sending over the air
 
 tic = TicXbee()
@@ -220,12 +212,6 @@ winch = tic.addr  # (1, 2, or 3)
 tic.energize()
 tic.exit_safe_start()
 
-# The micropython receive buffer needs to be emptied before we start processing
-# messages, but there is no flush() or similar call.
-# The buffer can only hold 4 packets, so just read it 4 times quickly.
-for _ in range(4):
-    xbee.receive()
-
 status_counter = 0
 prev_current_limit = 0
 velocity_actual = 0
@@ -236,88 +222,92 @@ winch_id = '_'
 
 wdt = WDT(timeout=2000)  # [ms]
 
+# The micropython receive buffer needs to be emptied before we start processing
+# messages, but there is no flush() or similar call.
+# The buffer can only hold 4 packets, so just read it 4 times quickly.
+for _ in range(4):
+    xbee.receive()
+
 # Listen for wireless commands.
 while True:
     m = xbee.receive()  # this does not block
     wdt.feed()
 
     if m is None:  # no new message
-        pass
-    else:
-        status_counter += 1
-        # get the address of the sender
-        sender_addr = m['sender_eui64']
+        continue
 
-        # pull out the message from the received data
-        cmd = m['payload'].decode('ascii')
+    status_counter += 1
+    # get the address of the sender
+    sender_addr = m['sender_eui64']
 
-        # parse out the speed from the payload
-        try:
-            speed_num = int(cmd[3:6])  # 0-255
-            if speed_num > 255:
-                speed_num = 255
-            elif speed_num < 0:
-                speed_num = 0
-        except ValueError:
+    # pull out the message from the received data
+    cmd = m['payload'].decode('ascii')
+
+    # parse out the speed from the payload
+    try:
+        speed_num = int(cmd[3:6])  # 0-255
+        if speed_num > 255:
+            speed_num = 255
+        elif speed_num < 0:
             speed_num = 0
+    except ValueError:
+        speed_num = 0
 
-        # extra commands come in two chars, but not all controllers send these bytes.
-        if len(cmd) >= 8:
-            action = cmd[6]
-            winch_id = cmd[7]
+    # extra commands come in two chars, but not all controllers send these bytes.
+    if len(cmd) >= 8:
+        action = cmd[6]
+        winch_id = cmd[7]
 
-        # relay.send(relay.BLUETOOTH, cmd)
+    # if requested, zero the position
+    if (action == 'z') and (winch_id == str(winch)):
+        # get winch speed to zero first
+        tic.set_velocity(0, step_mode)  # might be already, but just in case...
+        while tic.get_velocity() != 0:
+            utime.sleep_ms(100)
 
-        # if requested, zero the position
-        if (action == 'z') and (winch_id == str(winch)):
-            # get winch speed to zero first
-            tic.set_velocity(0, step_mode)  # might be already, but just in case...
-            while tic.get_velocity() != 0:
-                utime.sleep_ms(100)
+        tic.halt_and_set_position(0)
+        pos_offset = 0.0
+        pos_store.put(0.0)
+        tic.get_and_send_status()  # update the Android app display immediately
 
-            tic.halt_and_set_position(0)
-            pos_offset = 0.0
-            pos_store.put(0.0)
-            get_and_send_status()  # update the Android app display immediately
+        # so that we don't do the reset again the next time through the loop.
+        action = '_'
+        winch_id = '_'
 
-            # so that we don't do the reset again the next time through the loop.
-            action = '_'
-            winch_id = '_'
+    # and then the direction, to give velocity
+    dir_char = cmd[winch-1]
+    if dir_char == '1':  # pay out
+        velocity_req = speed[speed_num]
+    elif dir_char == '2':  # haul in
+        velocity_req = -speed[speed_num]
+    else:  # '0' or anything else
+        velocity_req = 0  # stop
 
-        # and then the direction, to give velocity
-        dir_char = cmd[winch-1]
-        if dir_char == '1':  # pay out
-            velocity_req = speed[speed_num]
-        elif dir_char == '2':  # haul in
-            velocity_req = -speed[speed_num]
-        else:  # '0' or anything else
-            velocity_req = 0  # stop
+    # Send to the Tic
+    tic.energize()
+    tic.exit_safe_start()
+    tic.reset_command_timeout()
 
-        # Send to the Tic
-        tic.energize()
-        tic.exit_safe_start()
-        tic.reset_command_timeout()
+    # To reduce power usage, limit the motor current when the winch is
+    # stationary. Only do this when the motor is actually stationary, and
+    # when going from stationary to moving, increase the current before
+    # moving the motor.
+    velocity_actual = tic.get_velocity()
+    if (velocity_req == 0) and (velocity_actual == 0):
+        current_limit = current_limit_stationary
+    else:
+        current_limit = max_motor_current
 
-        # To reduce power usage, limit the motor current when the winch is
-        # stationary. Only do this when the motor is actually stationary, and
-        # when going from stationary to moving, increase the current before
-        # moving the motor.
-        velocity_actual = tic.get_velocity()
-        if (velocity_req == 0) and (velocity_actual == 0):
-            current_limit = current_limit_stationary
-        else:
-            current_limit = max_motor_current
+    # change the tic current limit if it is different to last time
+    if prev_current_limit != current_limit:
+        tic.set_current_limit(current_limit)
+        prev_current_limit = current_limit
 
-        # change the tic current limit if it is different to last time
-        if prev_current_limit != current_limit:
-            tic.set_current_limit(current_limit)
-            prev_current_limit = current_limit
+    # once the current limit is adjusted (if necessary), change the
+    # requested velocity
+    tic.set_velocity(velocity_req, step_mode)
 
-        # once the current limit is adjusted (if necessary), change the
-        # requested velocity
-        tic.set_velocity(velocity_req, step_mode)
-
-        # get and send a status message to the controller
-        if status_counter >= status_period:
-            status_counter = 0
-            get_and_send_status()
+    # get and send a status message to the controller
+    if status_counter >= status_period:
+        status_counter = 0
+        tic.get_and_send_status()
