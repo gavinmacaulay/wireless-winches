@@ -184,7 +184,7 @@ Some examples:
 
 * `000105` will ensure that all winches are stopped. The speed potentiometer is set to a little under half speed.
 * `011000` will cause winches 2 and 3 to pay line out at the minimum speed.
-* `20125500` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate. As the 7th character is not `z``, the last two characters will have no effect.
+* `20125500` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate. As the 7th character is not `z`, the last two characters will have no effect.
 * `201128z2` will cause the line counter for winch 2 to be zeroed, winch 1 to take line in, and winch 3 to pay line out, both at half speed.
 
 A winch status message is sent by each winch unit back to the controller, which sends it out over the Bluetooth Low Energy communication link (using the Xbee3 User Data Frame mechanism). An Android app is available that uses these messages to show winch status information. This message is a comma separated ASCII string in the form:
