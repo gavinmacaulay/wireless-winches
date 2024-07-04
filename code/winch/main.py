@@ -7,14 +7,19 @@ from sys import stdin, stdout
 from machine import WDT, I2C
 from micropython import kbd_intr
 from store_value import storeValue
+from fram_i2c import _ADDR
 
 ticAddr = 14  # i2c bus address for the motor controller
+version = '1'  # Winch code/hardware id 1 = no FRAM, no i2c
 
 # Work out which comms channel to use
 uart = True  # Use the UART to control the motor controller
 i2c = I2C(1, freq=100000)
 devices = i2c.scan()
-if ticAddr in devices:
+if _ADDR in devices:  # FRAM device present
+    version = '2'  # FRAM, UART
+if ticAddr in devices:  # tic device present
+    version = '3'  # FRAM, i2c
     uart = False  # use i2c to control the motor controller
     print('Using i2c - motor controller detected on the bus.')
 
@@ -145,7 +150,7 @@ class TicXbee(object):
         except Exception as e:  # noqa
             pass
 
-        data = '{},{:.1f},{},{:.2f},{:.2f}'.format(winch, vin, t, p_physical, v_physical)
+        data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, p_physical, v_physical, version)
         if len(data) > self.max_payload_len:
             data = '{},error - message too long'.format(winch)
 
@@ -267,7 +272,11 @@ while True:
 
         tic.halt_and_set_position(0)
         pos_offset = 0.0
-        pos_store.put(0.0)
+        try:
+            pos_store.put(0.0)
+        except Exception as e:  # noqa
+            pass
+
         tic.get_and_send_status()  # update the Android app display immediately
 
         # so that we don't do the reset again the next time through the loop.
