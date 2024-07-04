@@ -172,7 +172,9 @@ Note that the controller only sends out messages to winches with identification 
 
 The poles are telescopic and made either of a 50/50 mix of carbon fibre and fibreglass or 100% carbon fibre (depends on the model). They are originally made for window washing and replacements are readily available from cleaning suppliers.
 
-== Communication messages
+== Communication
+
+=== Controller-produced messages
 
 The controller broadcasts a message to the winches, consisting of a single string containing six ASCII characters. Optionally, the message can contain two extra characters that are used to configure a winch. The meaning of the characters are:
 
@@ -187,11 +189,31 @@ Some examples:
 * `20125500` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate. As the 7th character is not `z`, the last two characters will have no effect.
 * `201128z2` will cause the line counter for winch 2 to be zeroed, winch 1 to take line in, and winch 3 to pay line out, both at half speed.
 
-A winch status message is sent by each winch unit back to the controller, which sends it out over the Bluetooth Low Energy communication link (using the Xbee3 User Data Frame mechanism). An Android app is available that uses these messages to show winch status information. This message is a comma separated ASCII string in the form:
+The controller also sends a message to the Android app using the same message style as the message sent by the winches (see below) and contains information about the controller. The message is a comma separated ASCII string in the form:
 
-`w,v.v,t,pp.pp,ss.ss`
+`0,id,mode,v.v,s.s,r.r`
 
-where the fields indicate:
+where the fields are:
+
+[%autowidth]
+|===
+|Field|Content|Decimal places|Units
+|id|Serial number of the controller|string|
+|mode|Mode of the controller|string|
+|v.v|Controller battery voltage|2|V
+|s.s|Controller battery charge|1|%
+|r.r|Controller battery rate of (dis)charge|1|%/hour
+|===
+
+The `0` in the first location is used by the app to separate controller messages from winch messages (which always start with the winch identification number: 1, 2, or 3).
+
+=== Winch-produced messages
+
+A winch status message is sent by each winch unit back to the controller, which forwards it out over the Bluetooth Low Energy communication link (using the Xbee3 User Data Frame mechanism). An Android app is available that uses these messages to show winch status information. This message is a comma separated ASCII string in the form:
+
+`w,v.v,t,pp.pp,ss.ss,V`
+
+where the fields are:
 
 [%autowidth]
 |===
@@ -201,11 +223,22 @@ where the fields indicate:
 |t|Winch internal temperature|0|&#176;C
 |pp.pp|Line paid out (can include leading negative sign)|2|m
 |ss.ss|Line speed (can include leading negative sign)|2|m s^-1^
+|V|Winch version idenfication (optional)|string|
 |===
 
-A negative line paid out value indicates the line has been taken in more than paid out. A negative line speed indicates the line is being taken in.
+A negative line paid out value indicates the line has been taken in more than paid out. A negative line speed indicates the line is being taken in. The winch version idenfication is used by the Andoid app to modify its' user interface to match the capabilities of the winch. It is optional and it and the preceeding comma are not produced by earlier versions of the winch code. Currently used values are:
 
-The Android app can send two-byte commands to the controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the message). This is currently used to tell the winches to reset their line counters.
+[%autowidth]
+|===
+|Value|Comms with motor controller|Remembers line out
+|1|UART|No
+|2|UART|Yes
+|3|i2c|Yes
+|===
+
+=== App-produced messages
+
+The Android app can send two-byte ASCII strings to the controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the controller-produced message). This is currently used to tell the winches to reset their line counters.
 
 [appendix]
 == Specifications
