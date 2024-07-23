@@ -142,9 +142,9 @@ image::images/wholeSystem.png[scaledwidth=18cm,float=right]
 
 === Winches
 
-The motors are of NEMA 23 size with an integrated 4.25:1 planetary gearbox, supplied by StepperOnline (model 23HS30-2804S-PG4). The motor is driven from a Pololu Tic T246 motor controller which is controlled via serial communication with a microPython programm running on the XBee3 radio module in each winch unit.
+The motors are of NEMA 23 size with an integrated 4.25:1 planetary gearbox, supplied by StepperOnline (model 23HS30-2804S-PG4). The motor is driven from a Pololu Tic T246 motor controller which is controlled via serial (I2C in later models) communication with a microPython programm running on the XBee3 radio module in each winch unit. 
 
-The acceleration and decceleration applied when the motor speed is changed is determined by a programmable setting in the Tic T246, as well as the maximum motor speed, and command timeout when no controller messages are received. 
+The acceleration and decceleration applied when the motor speed is changed is determined by a programmable setting in the Tic T246, as well as the maximum motor speed, and command timeout when no controller messages are received. Each unit stores the current line out value in non-volatile RAM and recalls that on power up so that battery swaps preserve the line out value.
 
 The winches were designed to hold a 6 kg load and are able to lift and lower 6 kg at slow speeds. Operation at higher speeds is only possible with smaller loads. The winch units operate with a 10-40 V DC input, but at least 36 V is needed to achieve sufficient motor torque to hold a 6 kg line load. 
 
@@ -152,7 +152,7 @@ The winches were designed to hold a 6 kg load and are able to lift and lower 6 k
 
 The controller contains a Digi XBee3 radio module, switches, a potentiometer, a rechargable battery, and a PCB that contains a MAX17048 battery status chip, LED's, and a mode switch. The XBee3 is integrated in a SparkFun Thing Plus XBee3 board (P/N WRL-15454) which provides power to the XBee3 via USB or a Lithium-Polymer battery. Battery management circuitry is also included that will charge the battery when USB power is provided.
 
- The mode switch on the controller sets whether the controller operates as a controller or as a range extender. In range extender mode the winch controls are disabled.
+The mode switch on the controller sets whether the controller operates as a controller or as a range extender. In range extender mode the winch controls are disabled.
 
 === Software
 
