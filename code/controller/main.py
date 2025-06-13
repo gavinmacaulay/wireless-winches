@@ -9,6 +9,7 @@ from max17048 import max17048  # noqa
 import utime  # noqa
 import xbee  # noqa
 from xbee import relay  # noqa
+from sys import stdout
 
 # Configurations
 
@@ -52,10 +53,10 @@ except:  # noqa
 def receive_status(m):
     """Is called when data is received from the winches."""
     if m is None:  # no new message
-        pass
-    else:
-        # pull out the message from the received data
-        status = m['payload'].decode('ascii')
+        return
+
+    # pull out the message from the received data
+    status = m['payload'].decode('ascii')
 
     # and send out on Bluetooth
     try:
@@ -63,15 +64,28 @@ def receive_status(m):
     except:  # noqa
         pass
 
+    # For receiving the messages over the controllers' serial to USB converter
+    if currentMode == CONTROLLER:
+        try:
+            stdout.write(status+'\n')
+        except:  # noqa
+            pass
+
 
 def send_self_battery(ident, mode, v, soc, rate):
-    """Send on Bluetooth the state of the battery in the controller."""
+    """Send on Bluetooth and serial the state of the battery in the controller."""
+    msg = '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(ident, modeText[mode], v, soc, rate)
     try:
-        relay.send(relay.BLUETOOTH,
-                   '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(ident, modeText[mode], v, soc, rate))
+        relay.send(relay.BLUETOOTH, msg)
     except:  # noqa
         pass
 
+    # For receiving the messages over the controllers' serial to USB converter
+    if mode == CONTROLLER:
+        try:
+            stdout.write(msg+'\n')
+        except:  # noqa
+            pass
 
 def setStatusLED(mode):
     """Set the status LED to indicate the operation mode."""
