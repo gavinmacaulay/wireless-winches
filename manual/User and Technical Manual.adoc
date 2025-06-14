@@ -240,6 +240,14 @@ A negative line paid out value indicates the line has been taken in more than pa
 
 The Android app can send two-byte ASCII strings to the controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the controller-produced message). This is currently used to tell the winches to reset their line counters.
 
+=== Status display without the Android app
+
+The winch and controller status messages that are sent to the Android app over Bluetooth are also copied out on the controller's USB connector via a virtual serial port. This can be useful if an Android device is not available, or the winch status app cannot be installed.
+
+A simple status display written in Python is provided https://github.com/gavinmacaulay/wireless-winches/blob/main/code/status_display_gui.py[here], you can write your own, or you can use some dashboard software that can parse data from a serial port (e.g., https://github.com/Serial-Studio/Serial-Studio[Serial-Studio])
+
+The virtual serial port should be set to 9600/8/N/1 and is provided by a Silicon Labs CP210x USB to UART bridge device.
+
 [appendix]
 == Specifications
 
