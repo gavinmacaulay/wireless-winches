@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Displays winch status
+"""Displays winch status.
 
-@author: gavinj
+The dependencies for this code are numpy and pyserial.
 """
 
 import queue
@@ -11,7 +9,7 @@ import numpy as np
 import threading
 import logging
 import logging.handlers
-from datetime import datetime
+from datetime import datetime as dt
 import os
 import sys
 from tkinter import font
@@ -34,6 +32,7 @@ global job  # handle to the function that does the echogram drawing
 
 
 def main():
+    """Create and run the GUI."""
     # Directory where log files go. Windows specific
     logdir = os.path.expandvars(r'%PROGRAMDATA%\WirelessWinches\log files')
     # make the directory
@@ -41,19 +40,13 @@ def main():
     setupLogging(logdir, 'Winches')
 
     # Serial port to listen to.
-    xbeeCOMport = 'COM8'
+    # xbeeCOMport = 'COM8'
 
-    # logging.info('Finding COM ports.')
-    # comports = serial.tools.list_ports.comports()
-    # comports = sorted(comports, key=lambda port: int(port.device[3:])) # sort on com port number
-
-    # logging.info('Available COM ports are:')
-    # for p in comports:
-    #     logging.info('Name: {port.device}, Description: {port.description}'.format(port=p))
-
-    # [selectedCOMports[0]] = [p.device for p in comports if 'Silicon Labs CP210x USB to UART Bridge' in p.description] or [selectedCOMports[0]]
-
-    logging.info('Selected COM port: {}'.format(xbeeCOMport))
+    xbeeUSBPortName = 'Silicon Labs CP210x USB to UART Bridge'
+    while not (comports := list(serial.tools.list_ports.grep(xbeeUSBPortName))):
+        logging.info('No controller serial port found. Trying again.')
+        sleep(2.0)
+    xbeeCOMport = comports[0].device
 
     # Does the parsing and display of winch stats
     display = dataDisplayer()
@@ -98,14 +91,14 @@ def main():
         batt.append(ttk.Label(root, text='--', anchor='e'))
         batt[i].grid(row=5, column=i+1, padx=5, sticky=tk.E+tk.W)
 
-    Widgets = namedtuple('widgets', 'time, p, v, t, b')
-    widgets = Widgets(time=timestampLabel, p=wire_out, v=velocity,
-                      t=temp, b=batt)
+    # Controller information
+    ttk.Separator(root).grid(row=6, columnspan=4, sticky=tk.EW)
+    controller_status = ttk.Label(root, text='', font=('TkDefaultFont', 12))
+    controller_status.grid(row=7, columnspan=4, sticky=tk.EW)
 
     # Config, and Close buttons
-    ttk.Separator(root).grid(row=6, columnspan=4, sticky=tk.EW)
     frame = tk.Frame()
-    frame.grid(row=7, column=0, columnspan=4, sticky=tk.NSEW)
+    frame.grid(row=8, column=0, columnspan=4, sticky=tk.NSEW)
 
     ttk.Button(frame, text='Config', command=display.openConfigDialog).grid(row=0, column=0,
                                                                             sticky=tk.NSEW)
@@ -119,6 +112,10 @@ def main():
         root.grid_columnconfigure(i, weight=1)
     for i in range(0, root.grid_size()[1]):
         root.grid_rowconfigure(i, weight=0)
+
+    Widgets = namedtuple('widgets', 'time, p, v, t, b, c')
+    widgets = Widgets(time=timestampLabel, p=wire_out, v=velocity,
+                      t=temp, b=batt, c=controller_status)
 
     # Create the threads that listen for messages from the hand controller
     t1 = threading.Thread(target=COM_listen, args=(xbeeCOMport, 'object',))
@@ -141,12 +138,12 @@ def main():
 
 
 def on_exit(sig, func=None):
-    """Called when the Windows cmd console closes."""
+    """Is called when the Windows cmd console closes."""
     window_closed()
 
 
 def window_closed():
-    """Called to nicely end the whole program."""
+    """Is called to nicely end the whole program."""
     global job
     root.after_cancel(job)
     logging.info('Program ending...')
@@ -155,26 +152,25 @@ def window_closed():
 
 def COM_listen(port, dataSource):
     """Listen for new data on the com port and put them onto a queue."""
-
     Data = namedtuple('data', 'timestamp, source, reading')
 
     while True:
         try:
             f = serial.Serial(port, baudrate=9600, timeout=10)
             f.reset_input_buffer()
-        except:
+        except (ValueError, serial.SerialException):
             logging.error(sys.exc_info()[1])
-            queue.put(Data(timestamp=datetime.utcnow(), source=dataSource, reading='no com port'))
+            queue.put(Data(timestamp=dt.utcnow(), source=dataSource, reading='no com port'))
             sleep(2.0)
         else:
             try:
-                logging.info('Listening to port: {}.'.format(port))
+                logging.info('Listening to serial port {}.'.format(port))
 
                 while True:
                     line = f.readline()
 
                     if not line:  # probably timed out
-                        queue.put(Data(timestamp=datetime.now(), source=dataSource,
+                        queue.put(Data(timestamp=dt.now(), source=dataSource,
                                        reading='timed out'))
                     else:
                         try:
@@ -182,10 +178,10 @@ def COM_listen(port, dataSource):
                         except UnicodeDecodeError:
                             pass
                         else:
-                            t = datetime.utcnow()
+                            t = dt.utcnow()
                             data = Data(timestamp=t, source=dataSource, reading=line)
                             queue.put(data)
-            except:
+            except Exception:
                 logging.warning(sys.exc_info()[1])
                 f.close()
 
@@ -194,7 +190,7 @@ def COM_listen(port, dataSource):
 
 
 class dataDisplayer:
-    """Receive via queues messages from the balances and update the data display."""
+    """Receive via queue messages and update the data display."""
 
     def __init__(self):
 
@@ -222,8 +218,12 @@ class dataDisplayer:
         self.noDataTimeout = 1.5  # [s] UI goes grey if no messages in this time
         self.maxPositionJump = 1  # [m] larger than this is taken as loss of power at winch
 
-    def updateUI(self, timestamp, widgets):
+        self.controller_voltage = np.nan
+        self.controller_id = None
+        self.controller_soc = np.nan
 
+    def updateUI(self, timestamp, widgets):
+        """Update the GUI."""
         widgets.time.config(text='{:%Y-%m-%d %H:%M:%S UTC}'.format(timestamp))
 
         now = time.time()
@@ -251,7 +251,13 @@ class dataDisplayer:
 
             widgets.b[i].config(text='{:.1f}'.format(self.battery[i]), style=battStyle, state=state)
 
+        print(self.controller_id)
+        if self.controller_id:
+            widgets.c.config(text=f'Controller {self.controller_id} '
+                             f'({self.controller_soc:.0f}% battery)')
+
     def getDirectionArrow(self, v):
+        """Return an appropriate arrow character."""
         dirn = ''
         if v < 0:
             dirn = '\u2191'
@@ -261,7 +267,6 @@ class dataDisplayer:
 
     def newData(self, root, widgets):
         """Receives messages from the queue, decodes them, and updates the display."""
-
         while not queue.empty():
             message = queue.get(block=False)
             try:
@@ -271,9 +276,10 @@ class dataDisplayer:
 
                     line = message.reading
                     line = line.rstrip()
-                    logging.info("Received: '{}'".format(line))
+                    logging.debug("Received: '{}'".format(line))
                     parts = line.split(',')
-                    if len(parts) == 5:
+
+                    if parts[0] >= '1' and len(parts) >= 5:
                         (winch_id, vin, xbee_temp, position, velocity) = parts
                         velocity = to_float(velocity)
                         position = to_float(position)
@@ -307,6 +313,12 @@ class dataDisplayer:
                         self.dataReceivedTime[i] = time.time()
 
                         self.updateUI(message.timestamp, widgets)
+                    elif line[0] == '0':
+                        if len(parts) == 6:
+                            (_, controller_id, mode, voltage, soc, rate) = parts
+                            self.controller_voltage = to_float(voltage)
+                            self.controller_id = controller_id
+                            self.controller_soc = to_float(soc)
                     elif (line == 'no com port') or (line == 'timed out'):
                         # force the UI to go grey
                         for i in range(3):
@@ -315,16 +327,16 @@ class dataDisplayer:
                     else:
                         logging.warning('Received malformed data: ' + line)
 
-            except None:  # if anything goes wrong in the parsing, just ignore it...
+            except Exception:  # if anything goes wrong in the parsing, just ignore it...
                 e = sys.exc_info()
                 logging.warning('Error when parsing balance message. Waiting for next message.')
                 logging.warning(e)
-                pass
 
         global job
         job = root.after(self.checkQueueInterval, self.newData, root, widgets)
 
     def openConfigDialog(self):
+        """Open the config dialog."""
         inputDialog = configDialog(root, self.positionOffset)
         root.wait_window(inputDialog.top)
         for i in range(3):
@@ -332,6 +344,8 @@ class dataDisplayer:
 
 
 class configDialog:
+    """Implement the config dialog."""
+
     def __init__(self, parent, offsets):
 
         default_font = font.nametofont('TkDefaultFont')
@@ -363,11 +377,11 @@ class configDialog:
         for i in range(0, self.top.grid_size()[1]):
             self.top.grid_rowconfigure(i, weight=0)
 
-    def close(self):
+    def close(self):  # noqa
         self.top.destroy()
 
 
-def to_float(x):
+def to_float(x):  # noqa
     try:
         return float(x)
     except ValueError:
@@ -375,9 +389,8 @@ def to_float(x):
 
 
 def setupLogging(log_dir, label):
-
-    # Setup info, warning, and error message logger to a file and to the console
-    now = datetime.utcnow()
+    """Configure info, warning, and error message logger to a file and to the console."""
+    now = dt.utcnow()
     logger_filename = os.path.join(log_dir, now.strftime('log_' + label + '-%Y%m%d-T%H%M%S.log'))
     logger = logging.getLogger('')
     logger.setLevel(logging.INFO)
