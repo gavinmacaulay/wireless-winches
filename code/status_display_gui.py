@@ -1,4 +1,4 @@
-"""Displays winch status.
+"""Graphical display of winch status.
 
 The dependencies for this code are numpy and pyserial.
 """
