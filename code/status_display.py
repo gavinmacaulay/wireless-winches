@@ -1,4 +1,8 @@
-"""Simple terminal-based display of winch status."""
+"""Text-based display of winch status.
+
+The only dependency for this code is pyserial.
+"""
+
 import serial
 import serial.tools.list_ports
 from dataclasses import dataclass

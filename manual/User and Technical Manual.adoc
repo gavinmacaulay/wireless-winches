@@ -244,7 +244,7 @@ The Android app can send two-byte ASCII strings to the controller, which appends
 
 The winch and controller status messages that are sent to the Android app over Bluetooth are also copied out on the controller's USB connector via a virtual serial port. This can be useful if an Android device is not available, or the winch status app cannot be installed.
 
-A simple status display written in Python is provided https://github.com/gavinmacaulay/wireless-winches/blob/main/code/status_display_gui.py[here], you can write your own, or you can use some dashboard software that can parse data from a serial port (e.g., https://github.com/Serial-Studio/Serial-Studio[Serial-Studio])
+Simple status displays written in Python are provided https://github.com/gavinmacaulay/wireless-winches/blob/main/code/status_display_gui.py[here] and https://github.com/gavinmacaulay/wireless-winches/blob/main/code/status_display.py[here]. The former provides a graphical display and the latter a terminal-based text display. You can write your own, or you can use some dashboard software that can parse data from a serial port (e.g., https://github.com/Serial-Studio/Serial-Studio[Serial-Studio]).
 
 The virtual serial port should be set to 9600/8/N/1 and is provided by a Silicon Labs CP210x USB to UART bridge device.
 
