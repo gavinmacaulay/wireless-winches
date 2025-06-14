@@ -251,7 +251,6 @@ class dataDisplayer:
 
             widgets.b[i].config(text='{:.1f}'.format(self.battery[i]), style=battStyle, state=state)
 
-        print(self.controller_id)
         if self.controller_id:
             widgets.c.config(text=f'Controller {self.controller_id} '
                              f'({self.controller_soc:.0f}% battery)')
