@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Aqualyd Wireless Winch Status</title>
+<style>
+    .dashboard {
+        display: flex;
+        justify-content: space-around;
+        padding: 2px;
+    }
+    .line-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        font-size: 80px;
+    }
+    .speed-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        font-size: 40px;
+    }
+    .voltage-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        font-size: 40px;
+    }
+    .temp-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        font-size: 40px;
+    }
+    .controller-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+        font-size: 20px;
+    }
+
+</style>
+</head>
+<body>
+
+<button id="connectButton">Choose serial port</button>
+<div id="target"></div>
+
+<div class="dashboard">
+    <div class="line-box" id="line1"></div>
+    <div class="line-box" id="line2"></div>
+    <div class="line-box" id="line3"></div>
+</div>
+<div class="dashboard">
+    <div class="speed-box" id="speed1"></div>
+    <div class="speed-box" id="speed2"></div>
+    <div class="speed-box" id="speed3"></div>
+</div>
+<div class="dashboard">
+    <div class="voltage-box" id="volt1"></div>
+    <div class="voltage-box" id="volt2"></div>
+    <div class="voltage-box" id="volt3"></div>
+</div>
+<div class="dashboard">
+    <div class="temp-box" id="temp1"></div>
+    <div class="temp-box" id="temp2"></div>
+    <div class="temp-box" id="temp3"></div>
+</div>
+<div class="controller-box" id="controller"></div>
+
+<script>
+    function updateWinch(id, line, speed, temp, voltage) {
+        document.getElementById("line"+id).innerText = line + ' m';
+        document.getElementById("speed"+id).innerHTML = speed + ' m s<sup>-1</sup>';
+        document.getElementById("temp"+id).innerText = temp + ' °C';
+        document.getElementById("volt"+id).innerText = voltage + ' V';
+    }
+
+    function updateController(id, mode, soc) {
+        document.getElementById("controller").innerText = id + "  🔋" + soc + "%";
+    }
+    
+    // Example usage:
+    updateWinch("1", 0, 0, 0, 0);
+    updateWinch("2", 0, 0, 0, 0);
+    updateWinch("3", 0, 0, 0, 0);
+    updateController("", "", "")
+
+</script>
+
+<script>
+document.getElementById('connectButton').addEventListener('click', () => {
+    if (navigator.serial) {
+      connectSerial();
+    } else {
+      alert('Web Serial API not supported. Try Chrome, Edge, or Opera.');
+    }
+  });
+  
+class LineBreakTransformer {
+    constructor() {
+        this.chunks = "";
+    }
+
+    transform(chunk, controller) {
+        this.chunks += chunk;
+        const lines = this.chunks.split("\r\n");
+        this.chunks = lines.pop();
+        lines.forEach((line) => controller.enqueue(line));
+    }
+
+    flush(controller) {
+        controller.enqueue(this.chunks);
+    }
+}
+
+  async function connectSerial() {
+    const log = document.getElementById('target');
+      
+    try {
+      const port = await navigator.serial.requestPort(); // can give filters here
+      await port.open({ baudRate: 9600 });
+      
+      const decoder = new TextDecoderStream();
+      port.readable.pipeTo(decoder.writable);
+      const reader = decoder.readable.pipeThrough(new TransformStream(new LineBreakTransformer())).getReader();
+      
+      while (true) {
+        const { value, done } = await reader.read();
+        if (value) {
+            const data = value.split(",");
+            if (data[0] > "0") {
+                updateWinch(data[0], data[3], data[4], data[2], data[1])
+            } else if (data[0] == "0") {
+                updateController(data[1], data[2], data[4])
+            } else {
+                log.console(value)
+            }
+          /* log.textContent = value.trim(); */
+        }
+        if (done) {
+          reader.releaseLock();
+          break;
+        }
+      }
+    
+    } catch (error) {
+      log.innerHTML = error;
+    }
+  }
+</script>
+</body>
+</html>
