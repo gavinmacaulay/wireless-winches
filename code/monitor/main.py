@@ -1,19 +1,19 @@
 """Code to run on an Aqualyd winch monitoring device (an Xbee3)."""
 
-import utime  # noqa
-import xbee  # noqa
 from sys import stdout
+import time
+import xbee
 
 # Time between adbvertising that we are here
 advertiseInterval = 1000  # [ms]
+
 
 def receive_status(m):
     """Is called when data is received from the winches and controllers."""
     if m is None:  # no new message
         return
 
-    # we don't want to send out the controller broadcast messages or broadcasts
-    # from other monitor devices
+    # we only want to output messages addressed to us, so ignore broadcast ones
     if m['broadcast']:
         return
 
@@ -23,13 +23,13 @@ def receive_status(m):
     # and send out via the serial port
     try:
         stdout.write(status+'\n')
-    except Exception:  # noqa
+    except Exception:
         pass
+
 
 xbee.receive_callback(receive_status)
 
 while True:
     # Tell others we are here
-    # we define cluster_i of 0x0101 as meaning not an control message
-    xbee.transmit(xbee.ADDR_BROADCAST, 'MONITOR', cluster_id=0x0101)
-    utime.sleep_ms(advertiseInterval)  # does this prevent the callback from happening?
+    xbee.transmit(xbee.ADDR_BROADCAST, 'MONITOR')
+    time.sleep_ms(advertiseInterval)  # does this prevent the callback from happening?
