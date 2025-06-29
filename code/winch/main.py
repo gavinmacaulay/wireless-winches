@@ -1,9 +1,9 @@
 """Code to run on the Aqualyd echosounder calibration winches."""
 
+from sys import stdin, stdout
 import xbee
 import array
 import utime
-from sys import stdin, stdout
 from machine import WDT, I2C
 from micropython import kbd_intr
 from store_value import storeValue
@@ -24,7 +24,7 @@ if ticAddr in devices:  # tic device present
     print('Using i2c - motor controller detected on the bus.')
 
 
-class TicXbee(object):
+class TicXbee:
     """Provide access to tic from the xbee."""
 
     def __init__(self):
@@ -37,9 +37,9 @@ class TicXbee(object):
         self.max_payload_len = int(xbee.atcmd('NP'))  # for sending over the air
 
 
-    def send_command(self, cmd, data_bytes):  # noqa
+    def send_command(self, c, data_bytes):  # noqa
         # data_byes should be an iterable data structure
-        buf = bytearray([cmd])
+        buf = bytearray([c])
         if data_bytes:
             buf.extend(bytes(data_bytes))
 
@@ -102,18 +102,18 @@ class TicXbee(object):
                     v >> 8 & 0x7F,
                     v >> 16 & 0x7F,
                     v >> 24 & 0x7F]
-        else:
-            return [v >> 0 & 0xFF,
-                    v >> 8 & 0xFF,
-                    v >> 16 & 0xFF,
-                    v >> 24 & 0xFF]
+
+        return [v >> 0 & 0xFF,
+                v >> 8 & 0xFF,
+                v >> 16 & 0xFF,
+                v >> 24 & 0xFF]
 
     def twos_complement(self, value, bitWidth):  # noqa
 
         if value >= 2**bitWidth:
             return value  # should raise an exception here...
-        else:
-            return value - int((value << 1) & 2**bitWidth)
+
+        return value - int((value << 1) & 2**bitWidth)
 
     def get_status(self):  # noqa
         # Get input voltage
@@ -136,9 +136,8 @@ class TicXbee(object):
 
         return (vin, position, velocity, xbee_temp)
 
-
     def get_and_send_status(self):  # noqa
-        # Get winch status and send it to the controller
+        # Get winch status and send it to the controller and any monitors
         (vin, pos_actual, velocity_actual, t) = self.get_status()
         v_physical = velocity_actual * pulses_factor_speed  # [m/s]
 
@@ -147,21 +146,43 @@ class TicXbee(object):
             # This value only gets used on startup, when pos_actual is zero, so storing
             # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
             pos_store.put(p_physical)
-        except Exception as e:  # noqa
+        except Exception:
             pass
 
-        data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, p_physical, v_physical, version)
+        data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, p_physical, v_physical,
+                                                      version)
         if len(data) > self.max_payload_len:
             data = '{},error - message too long'.format(winch)
 
         # send to whoever sent the most recent message we received
         try:
             xbee.transmit(sender_addr, data)
-        except Exception as e:  # noqa
+        except Exception:
             pass
+
+        # For xbee's that advertise themselves as monitors
+        for addr in active_monitors:
+            try:
+                xbee.transmit(addr, data)
+            except Exception:
+                pass
+
+
+def retire_monitors():
+    """Remove old monitor addresses."""
+    now = utime.tick_ms()
+    for addr, tick in list(active_monitors.items()):
+        if utime.ticks_diff(now - tick) > max_monitor_age:
+            del active_monitors[addr]
 
 
 # Config variables
+
+# xbee's that we send status messages to
+active_monitors = {}
+max_monitor_age = 2000  # [ms]
+retireMonitorInterval = 5  # times through the main loop
+
 status_period = 5  # generate a status message every x recieved messages from controller
 max_motor_current = 2720  # [mA] From motor specs
 
@@ -241,12 +262,17 @@ while True:
     if m is None:  # no new message
         continue
 
-    status_counter += 1
     # get the address of the sender
     sender_addr = m['sender_eui64']
 
     # pull out the message from the received data
     cmd = m['payload'].decode('ascii')
+
+    if cmd == 'MONITOR':
+        active_monitors[m['sender_eiu64']] = utime.ticks_ms()
+        continue
+
+    status_counter += 1
 
     # parse out the speed from the payload
     try:
@@ -274,7 +300,7 @@ while True:
         pos_offset = 0.0
         try:
             pos_store.put(0.0)
-        except Exception as e:  # noqa
+        except Exception:
             pass
 
         tic.get_and_send_status()  # update the Android app display immediately

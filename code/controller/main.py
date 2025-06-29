@@ -1,5 +1,7 @@
 """Code to run on the Aqualyd echosounder calibration winch wireless control box."""
 
+
+from sys import stdout
 import machine
 # Status leds. Do these early cause default states of the pin can cause unwanted
 # operation of the leds
@@ -7,9 +9,11 @@ ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
 ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
 from max17048 import max17048  # noqa
 import utime  # noqa
-import xbee  # noqa
-from xbee import relay  # noqa
-from sys import stdout
+import xbee  # noqa: E402
+from xbee import relay  #noqa
+
+# TODO
+# what happens when loopcount overflows?
 
 # Configurations
 
@@ -40,52 +44,81 @@ bVolt = 0.0  # [V]
 bSOC = 0.0  # [%]
 bCRate = 0.0  # [%/hr]
 
+# xbee's that we send status messages to
+active_monitors = {}
+max_monitor_age = 2000  # [ms]
+retireMonitorInterval = 5  # times through the main loop
+
 # This xbee's node identifier
 ident = xbee.atcmd('NI')
 
 # Battery monitoring
 try:
     battery = max17048()
-except:  # noqa
+except Exception:
     battery = None
 
 
 def receive_status(m):
-    """Is called when data is received from the winches."""
+    """Is called when data is received.
+
+    Data either comes from the winches or from a monitoring Xbee
+    """
     if m is None:  # no new message
         return
 
     # pull out the message from the received data
-    status = m['payload'].decode('ascii')
+    msg = m['payload'].decode('ascii')
 
-    # and send out on Bluetooth
+    if m['broadcast']:
+        if msg == 'MONITOR':
+            active_monitors[m['sender_eiu64']] = utime.ticks_ms()
+        return
+
+    # Is a winch message, so send out on Bluetooth for the app
     try:
-        relay.send(relay.BLUETOOTH, status)
-    except:  # noqa
+        relay.send(relay.BLUETOOTH, msg)
+    except Exception:
         pass
 
-    # For receiving the messages over the controllers' serial to USB converter
+    # And out on the controllers' serial to USB converter
     if currentMode == CONTROLLER:
         try:
-            stdout.write(status+'\n')
-        except:  # noqa
+            stdout.write(msg+'\n')
+        except Exception:
             pass
 
 
-def send_self_battery(ident, mode, v, soc, rate):
-    """Send on Bluetooth and serial the state of the battery in the controller."""
-    msg = '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(ident, modeText[mode], v, soc, rate)
+def send_self_battery(cid, mode, v, soc, rate):
+    """Send out the state of the battery in the controller."""
+    msg = '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(cid, modeText[mode], v, soc, rate)
     try:
         relay.send(relay.BLUETOOTH, msg)
-    except:  # noqa
+    except Exception:
         pass
 
-    # For receiving the messages over the controllers' serial to USB converter
+    # For xbee's that advertise themselves as monitors
+    for addr in active_monitors:
+        try:
+            xbee.transmit(addr, msg)
+        except Exception:
+            pass
+
+    # Send messages out via over the controllers' serial to USB converter
     if mode == CONTROLLER:
         try:
             stdout.write(msg+'\n')
-        except:  # noqa
+        except Exception:
             pass
+
+
+def retire_monitors():
+    """Remove old monitor addresses."""
+    now = utime.tick_ms()
+    for addr, tick in list(active_monitors.items()):
+        if utime.ticks_diff(now - tick) > max_monitor_age:
+            del active_monitors[addr]
+
 
 def setStatusLED(mode):
     """Set the status LED to indicate the operation mode."""
@@ -137,7 +170,7 @@ while True:
     try:
         while True:
             # work out if we need to change mode
-            if (modeSelect.value() != currentMode):
+            if modeSelect.value() != currentMode:
                 loopCount = 0  # will cause a new battery message to be sent to the app
                 if currentMode == CONTROLLER:
                     currentMode = EXTENDER
@@ -198,9 +231,11 @@ while True:
                     bVolt = battery.getVCell()  # [V]
                     bSOC = battery.getSOC()  # [%]
                     bCRate = battery.getChargeRate()  # [%/hr]
-                    if bSOC > 100.0:
-                        bSOC = 100.0
+                    bSOC = min(bSOC, 100.0)
                 send_self_battery(ident, currentMode, bVolt, bSOC, bCRate)
+
+            if (loopCount % retireMonitorInterval) == 0:
+                retire_monitors()
 
             # Turn on the status leds every statusToggleRate time through
             if bSOC > 50.0:
