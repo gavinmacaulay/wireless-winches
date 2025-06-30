@@ -8,7 +8,7 @@ import machine
 ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
 ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
 from max17048 import max17048  # noqa
-import utime  # noqa
+import time  # noqa
 import xbee  # noqa: E402
 from xbee import relay  #noqa
 
@@ -46,8 +46,8 @@ bCRate = 0.0  # [%/hr]
 
 # xbee's that we send status messages to
 active_monitors = {}
-max_monitor_age = 2000  # [ms]
-retireMonitorInterval = 5  # times through the main loop
+max_monitor_age = 5000  # [ms]
+retire_monitor_interval = 10  # times through the main loop
 
 # This xbee's node identifier
 ident = xbee.atcmd('NI')
@@ -72,21 +72,22 @@ def receive_status(m):
 
     if m['broadcast']:
         if msg == 'MONITOR':
-            active_monitors[m['sender_eiu64']] = utime.ticks_ms()
+            active_monitors[m['sender_eui64']] = time.ticks_ms()
         return
 
     # Is a winch message, so send out on Bluetooth for the app
-    try:
-        relay.send(relay.BLUETOOTH, msg)
-    except Exception:
-        pass
-
-    # And out on the controllers' serial to USB converter
     if currentMode == CONTROLLER:
         try:
-            stdout.write(msg+'\n')
+            relay.send(relay.BLUETOOTH, msg)
         except Exception:
             pass
+
+    # And out on the controllers' serial to USB converter
+    #if currentMode == CONTROLLER:
+    #    try:
+    #        stdout.write(msg+'\n')
+    #    except Exception:
+    #        pass
 
 
 def send_self_battery(cid, mode, v, soc, rate):
@@ -105,18 +106,18 @@ def send_self_battery(cid, mode, v, soc, rate):
             pass
 
     # Send messages out via over the controllers' serial to USB converter
-    if mode == CONTROLLER:
-        try:
-            stdout.write(msg+'\n')
-        except Exception:
-            pass
+    #if mode == CONTROLLER:
+    #    try:
+    #        stdout.write(msg+'\n')
+    #    except Exception:
+    #        pass
 
 
 def retire_monitors():
     """Remove old monitor addresses."""
-    now = utime.tick_ms()
+    now = time.ticks_ms()
     for addr, tick in list(active_monitors.items()):
-        if utime.ticks_diff(now - tick) > max_monitor_age:
+        if time.ticks_diff(now , tick) > max_monitor_age:
             del active_monitors[addr]
 
 
@@ -163,8 +164,8 @@ winch2in = machine.Pin(machine.Pin.board.D9, machine.Pin.IN, machine.Pin.PULL_UP
 winch3out = machine.Pin(machine.Pin.board.D4, machine.Pin.IN, machine.Pin.PULL_UP)
 winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
 
-if currentMode == CONTROLLER:
-    xbee.receive_callback(receive_status)
+# if currentMode == CONTROLLER:
+xbee.receive_callback(receive_status)
 
 while True:
     try:
@@ -174,10 +175,10 @@ while True:
                 loopCount = 0  # will cause a new battery message to be sent to the app
                 if currentMode == CONTROLLER:
                     currentMode = EXTENDER
-                    xbee.receive_callback(None)
+                    # xbee.receive_callback(None)
                 else:
                     currentMode = CONTROLLER
-                    xbee.receive_callback(receive_status)
+                    # xbee.receive_callback(receive_status)
 
                 setStatusLED(currentMode)
 
@@ -234,7 +235,7 @@ while True:
                     bSOC = min(bSOC, 100.0)
                 send_self_battery(ident, currentMode, bVolt, bSOC, bCRate)
 
-            if (loopCount % retireMonitorInterval) == 0:
+            if (loopCount % retire_monitor_interval) == 0:
                 retire_monitors()
 
             # Turn on the status leds every statusToggleRate time through
@@ -251,7 +252,7 @@ while True:
             loopCount += 1
 
             # Wait a bit (also controls how often we send messages to the winches)
-            utime.sleep_ms(pollInterval)
+            time.sleep_ms(pollInterval)
 
             # Off with the LEDs
             if statusToggleRate != 1:

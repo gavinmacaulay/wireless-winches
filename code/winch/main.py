@@ -3,7 +3,7 @@
 from sys import stdin, stdout
 import xbee
 import array
-import utime
+import time
 from machine import WDT, I2C
 from micropython import kbd_intr
 from store_value import storeValue
@@ -167,12 +167,11 @@ class TicXbee:
             except Exception:
                 pass
 
-
 def retire_monitors():
     """Remove old monitor addresses."""
-    now = utime.tick_ms()
+    now = time.ticks_ms()
     for addr, tick in list(active_monitors.items()):
-        if utime.ticks_diff(now - tick) > max_monitor_age:
+        if time.ticks_diff(now , tick) > max_monitor_age:
             del active_monitors[addr]
 
 
@@ -180,10 +179,9 @@ def retire_monitors():
 
 # xbee's that we send status messages to
 active_monitors = {}
-max_monitor_age = 2000  # [ms]
-retireMonitorInterval = 5  # times through the main loop
+max_monitor_age = 5000  # [ms]
 
-status_period = 5  # generate a status message every x recieved messages from controller
+status_period = 500  # [ms] how often to send status messages
 max_motor_current = 2720  # [mA] From motor specs
 
 # Reduce the max allowed motor current when winch is stopped. This significantly
@@ -238,7 +236,6 @@ winch = tic.addr  # (1, 2, or 3)
 tic.energize()
 tic.exit_safe_start()
 
-status_counter = 0
 prev_current_limit = 0
 velocity_actual = 0
 
@@ -254,12 +251,22 @@ wdt = WDT(timeout=2000)  # [ms]
 for _ in range(4):
     xbee.receive()
 
+then = time.ticks_ms()
+
 # Listen for wireless commands.
 while True:
     m = xbee.receive()  # this does not block
     wdt.feed()
 
     if m is None:  # no new message
+        # code in here runs under the assumption that we can call xbee.receive()
+        # above more frequently than messages arrive from the controller.
+
+        # if we haven't done a status message for a while, do one now
+        if time.ticks_diff(time.ticks_ms(), then) > status_period:
+            tic.get_and_send_status()
+            retire_monitors()
+            then = time.ticks_ms()
         continue
 
     # get the address of the sender
@@ -269,10 +276,11 @@ while True:
     cmd = m['payload'].decode('ascii')
 
     if cmd == 'MONITOR':
-        active_monitors[m['sender_eiu64']] = utime.ticks_ms()
+        active_monitors[m['sender_eui64']] = time.ticks_ms()
         continue
 
-    status_counter += 1
+    # Under the assumption that we've received a winch control message from
+    # a controller, work out what to do.
 
     # parse out the speed from the payload
     try:
@@ -294,7 +302,7 @@ while True:
         # get winch speed to zero first
         tic.set_velocity(0, step_mode)  # might be already, but just in case...
         while tic.get_velocity() != 0:
-            utime.sleep_ms(100)
+            time.sleep_ms(100)
 
         tic.halt_and_set_position(0)
         pos_offset = 0.0
@@ -341,8 +349,3 @@ while True:
     # once the current limit is adjusted (if necessary), change the
     # requested velocity
     tic.set_velocity(velocity_req, step_mode)
-
-    # get and send a status message to the controller
-    if status_counter >= status_period:
-        status_counter = 0
-        tic.get_and_send_status()
