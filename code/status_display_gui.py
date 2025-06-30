@@ -10,6 +10,7 @@ import threading
 import logging
 import logging.handlers
 from datetime import datetime as dt
+from datetime import UTC
 import os
 import sys
 from tkinter import font
@@ -160,7 +161,7 @@ def COM_listen(port, dataSource):
             f.reset_input_buffer()
         except (ValueError, serial.SerialException):
             logging.error(sys.exc_info()[1])
-            queue.put(Data(timestamp=dt.utcnow(), source=dataSource, reading='no com port'))
+            queue.put(Data(timestamp=dt.now(UTC), source=dataSource, reading='no com port'))
             sleep(2.0)
         else:
             try:
@@ -170,7 +171,7 @@ def COM_listen(port, dataSource):
                     line = f.readline()
 
                     if not line:  # probably timed out
-                        queue.put(Data(timestamp=dt.now(), source=dataSource,
+                        queue.put(Data(timestamp=dt.now(UTC), source=dataSource,
                                        reading='timed out'))
                     else:
                         try:
@@ -178,7 +179,7 @@ def COM_listen(port, dataSource):
                         except UnicodeDecodeError:
                             pass
                         else:
-                            t = dt.utcnow()
+                            t = dt.now(UTC)
                             data = Data(timestamp=t, source=dataSource, reading=line)
                             queue.put(data)
             except Exception:
@@ -279,7 +280,7 @@ class dataDisplayer:
                     parts = line.split(',')
 
                     if parts[0] >= '1' and len(parts) >= 5:
-                        (winch_id, vin, xbee_temp, position, velocity) = parts
+                        (winch_id, vin, xbee_temp, position, velocity, *tmp) = parts
                         velocity = to_float(velocity)
                         position = to_float(position)
 
@@ -328,7 +329,7 @@ class dataDisplayer:
 
             except Exception:  # if anything goes wrong in the parsing, just ignore it...
                 e = sys.exc_info()
-                logging.warning('Error when parsing balance message. Waiting for next message.')
+                logging.warning('Error when parsing message. Waiting for next.')
                 logging.warning(e)
 
         global job
@@ -389,7 +390,7 @@ def to_float(x):  # noqa
 
 def setupLogging(log_dir, label):
     """Configure info, warning, and error message logger to a file and to the console."""
-    now = dt.utcnow()
+    now = dt.now(UTC)
     logger_filename = os.path.join(log_dir, now.strftime('log_' + label + '-%Y%m%d-T%H%M%S.log'))
     logger = logging.getLogger('')
     logger.setLevel(logging.INFO)
