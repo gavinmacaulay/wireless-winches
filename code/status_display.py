@@ -55,7 +55,7 @@ msg_time = monotonic()
 winch_info = {'1': data(), '2': data(), '3': data()}
 
 print(f'Using serial port {serial_port}.')
-print('User Ctrl-C to exit')
+print('Use Ctrl-C to exit')
 
 with serial.Serial(serial_port, 9600, timeout=10) as s:
     s.reset_input_buffer()
