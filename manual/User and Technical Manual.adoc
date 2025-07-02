@@ -1,8 +1,8 @@
 = Wireless echosounder calibration winch manual
 :author: Aqualyd Limited
 :email: gavin@aqualyd.nz
-:revnumber: 1.3
-:revdata: July 2024
+:revnumber: 1.4
+:revdata: July 2025
 :sectnums:
 :doctype: book
 :toc:
@@ -15,7 +15,7 @@
 
 [colophon]
 
-(C) 2024 Aqualyd Limited +
+(C) 2025 Aqualyd Limited +
 341 Higgins Road +
 Wakefield +
 New Zealand
@@ -189,7 +189,7 @@ Some examples:
 * `20125500` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate. As the 7th character is not `z`, the last two characters will have no effect.
 * `201128z2` will cause the line counter for winch 2 to be zeroed, winch 1 to take line in, and winch 3 to pay line out, both at half speed.
 
-The controller also sends a message to the Android app using the same message style as the message sent by the winches (see below) and contains information about the controller. The message is a comma separated ASCII string in the form:
+The controller also sends a message to the Android app and to any Monitor Xbee devices using the same message style as the message sent by the winches (see below) and contains information about the controller. The message is a comma separated ASCII string in the form:
 
 `0,id,mode,v.v,s.s,r.r`
 
@@ -209,7 +209,7 @@ The `0` in the first location is used by the app to separate controller messages
 
 === Winch-produced messages
 
-A winch status message is sent by each winch unit back to the controller, which forwards it out over the Bluetooth Low Energy communication link (using the Xbee3 User Data Frame mechanism). An Android app is available that uses these messages to show winch status information. This message is a comma separated ASCII string in the form:
+A winch status message is sent by each winch unit back to the controller, which forwards it out over the Bluetooth Low Energy communication link (using the Xbee3 User Data Frame mechanism). An Android app is available that uses these messages to show winch status information. The status message is also sent to any active Monitor Xbee devices. This message is a comma separated ASCII string in the form:
 
 `w,v.v,t,pp.pp,ss.ss,V`
 
@@ -240,11 +240,11 @@ A negative line paid out value indicates the line has been taken in more than pa
 
 The Android app can send two-byte ASCII strings to the controller, which appends them to the messages sent to the winches (these are the 7th and 8th characters in the controller-produced message). This is currently used to tell the winches to reset their line counters.
 
-=== Status display without the Android app
+=== Monitor Xbee device
 
-The winch and controller status messages that are sent to the Android app over Bluetooth are also copied out on the controller's USB connector via a virtual serial port when using controller code dated from June 2025 onwards. This can be useful if an Android device is not available, or the winch status app cannot be installed.
+A Monitor Xbee is a device that receives copies of the winch and controller status messages and outputs them on a USB/serial port. The Monitor can be used to obtain winch status data independent of the Android app. Multiple Monitor devices can operate simultaneously, each outputting the winch and controller status messages. The Sparkfun Thing Plus Xbee is recommended for use as a Monitor device as it inorporates a USB connection that provides both serial data and a power supply for the Xbee. 
 
-Three basic displays of this information are provided:
+Three example winch status display programs are provided:
 
 * https://github.com/gavinmacaulay/wireless-winches/blob/main/code/status_display_gui.py[Python code] that produces a simple GUI display of the winch information
 * https://github.com/gavinmacaulay/wireless-winches/blob/main/code/status_display.py[Python code] that produces a terminal-based text display of the winch information
