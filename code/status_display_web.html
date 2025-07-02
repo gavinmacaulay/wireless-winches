@@ -33,7 +33,11 @@
         font-size: 40px;
     }
     .controller-box {
-        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+        font-size: 20px;
+    }
+    .extender-box {
         padding: 10px;
         text-align: left;
         font-size: 20px;
@@ -67,6 +71,7 @@
     <div class="temp-box" id="temp3"></div>
 </div>
 <div class="controller-box" id="controller"></div>
+<div class="extender-box" id="extender"></div>
 
 <script>
     function updateWinch(id, line, speed, temp, voltage) {
@@ -77,14 +82,12 @@
     }
 
     function updateController(id, mode, soc) {
-        document.getElementById("controller").innerText = id + "  🔋" + soc + "%";
+        document.getElementById(mode).innerText = "🔋" + soc + "%  (" + mode + ", " + id + ")";
     }
-    
-    // Example usage:
+
     updateWinch("1", 0, 0, 0, 0);
     updateWinch("2", 0, 0, 0, 0);
     updateWinch("3", 0, 0, 0, 0);
-    updateController("", "", "")
 
 </script>
 
@@ -136,7 +139,6 @@ class LineBreakTransformer {
             } else {
                 log.console(value)
             }
-          /* log.textContent = value.trim(); */
         }
         if (done) {
           reader.releaseLock();
