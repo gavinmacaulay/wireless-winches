@@ -115,7 +115,7 @@ class TicXbee:
 
         return value - int((value << 1) & 2**bitWidth)
 
-    def get_status(self):  # noqa
+    def get_status(self):
         # Get input voltage
         vin_bytes = self.get_variables(0x33, 2)  # [mV], unsigned 16-bit
         vin = int.from_bytes(vin_bytes, 'little') / 1000
@@ -136,12 +136,13 @@ class TicXbee:
 
         return (vin, position, velocity, xbee_temp)
 
-    def get_and_send_status(self):  # noqa
+    def get_and_send_status(self, sender_addr):
         # Get winch status and send it to the controller and any monitors
         (vin, pos_actual, velocity_actual, t) = self.get_status()
-        v_physical = velocity_actual * pulses_factor_speed  # [m/s]
 
+        v_physical = velocity_actual * pulses_factor_speed  # [m/s]
         p_physical = pos_actual * pulses_factor_position + pos_offset  # [m]
+
         try:
             # This value only gets used on startup, when pos_actual is zero, so storing
             # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
@@ -155,10 +156,11 @@ class TicXbee:
             data = '{},error - message too long'.format(winch)
 
         # send to whoever sent the most recent message we received
-        try:
-            xbee.transmit(sender_addr, data)
-        except Exception:
-            pass
+        if sender_addr is not None:
+            try:
+                xbee.transmit(sender_addr, data)
+            except Exception:
+                pass
 
         # For xbee's that advertise themselves as monitors
         for addr in active_monitors:
@@ -236,7 +238,9 @@ winch = tic.addr  # (1, 2, or 3)
 tic.energize()
 tic.exit_safe_start()
 
-prev_current_limit = 0
+tic.set_current_limit(current_limit_stationary)
+
+prev_current_limit = current_limit_stationary
 velocity_actual = 0
 
 # Extra command chars
@@ -258,25 +262,24 @@ while True:
     m = xbee.receive()  # this does not block
     wdt.feed()
 
-    if m is None:  # no new message
-        # code in here runs under the assumption that we can call xbee.receive()
-        # above more frequently than messages arrive from the controller.
+    # get the address of the sender
+    sender_addr = m['sender_eui64'] if m else None
+    # pull out the message from the received data
+    cmd = m['payload'].decode('ascii') if m else None
 
-        # if we haven't done a status message for a while, do one now
-        if time.ticks_diff(time.ticks_ms(), then) > status_period:
-            tic.get_and_send_status()
-            retire_monitors()
-            then = time.ticks_ms()
+    # Update/refresh the list of xbees that want to get status messages
+    if cmd == 'MONITOR':
+        active_monitors[sender_addr] = time.ticks_ms()
         continue
 
-    # get the address of the sender
-    sender_addr = m['sender_eui64']
+    # Send the status message if it is time
+    if time.ticks_diff(time.ticks_ms(), then) > status_period:
+        tic.get_and_send_status(sender_addr)
+        retire_monitors()
+        then = time.ticks_ms()
 
-    # pull out the message from the received data
-    cmd = m['payload'].decode('ascii')
-
-    if cmd == 'MONITOR':
-        active_monitors[m['sender_eui64']] = time.ticks_ms()
+    # Below this if statement we deal with winch control messages, so skip them if no message
+    if m is None:
         continue
 
     # Under the assumption that we've received a winch control message from
@@ -311,7 +314,7 @@ while True:
         except Exception:
             pass
 
-        tic.get_and_send_status()  # update the Android app display immediately
+        tic.get_and_send_status(sender_addr)  # update the status displays immediately
 
         # so that we don't do the reset again the next time through the loop.
         action = '_'
