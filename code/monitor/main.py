@@ -3,6 +3,10 @@
 from sys import stdout
 import time
 import xbee
+import machine
+
+led = machine.Pin(machine.Pin.board.D4, machine.Pin.OUT)
+led(0)
 
 # Time between adbvertising that we are here
 advertiseInterval = 1000  # [ms]
@@ -22,7 +26,9 @@ def receive_status(m):
 
     # and send out via the serial port
     try:
+        led(1)
         stdout.write(status+'\n')
+        led(0)
     except Exception:
         pass
 
