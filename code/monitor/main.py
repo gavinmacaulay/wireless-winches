@@ -32,10 +32,16 @@ def receive_status(m):
     except Exception:
         pass
 
-
-xbee.receive_callback(receive_status)
-
 while True:
-    # Tell others we are here
-    xbee.transmit(xbee.ADDR_BROADCAST, 'MONITOR')
-    time.sleep_ms(advertiseInterval)  # does this prevent the callback from happening?
+    try:
+        xbee.receive_callback(receive_status)
+
+        while True:
+            # Tell others we are here
+            xbee.transmit(xbee.ADDR_BROADCAST, 'MONITOR')
+            time.sleep_ms(advertiseInterval)  # does this prevent the callback from happening?
+    except Exception as e:
+        print('An error occurred: {} = {}'.format(type(e).__name__, e))
+        print('Waiting a bit and trying again...')
+        time.sleep(2)
+    
