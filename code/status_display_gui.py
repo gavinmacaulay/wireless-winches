@@ -22,9 +22,16 @@ import serial
 import serial.tools.list_ports
 from pathlib import Path
 import time
+import argparse
 
 if sys.platform == "win32":
     import win32api
+
+parser = argparse.ArgumentParser(description='A simple display of winch status')
+parser.add_argument('-p', '--port', default=None, help='The serial port to connect to for winch status messages. Will'\
+    ' try to automatically use suitable available ports.')
+
+args = parser.parse_args()
 
 # queue to communicate between two threads
 queue = queue.Queue()
@@ -40,20 +47,29 @@ def main():
     Path(logdir).mkdir(parents=True, exist_ok=True)
     setupLogging(logdir, 'Winches')
 
-    # Serial port to listen to.
-    # xbeeCOMport = 'COM8'
+    # The current version of the controller uses this USB-to-UART chip and it appears
+    # with this name (under Windows, at least)
+    serial_port = args.port
 
-    xbeeUSBPortName = 'Silicon Labs CP210x USB to UART Bridge'
-    while not (comports := list(serial.tools.list_ports.grep(xbeeUSBPortName))):
-        logging.info('No controller serial port found. Trying again.')
-        sleep(2.0)
-    xbeeCOMport = comports[0].device
+    if serial_port is None:
+        USB_port_name = 'Silicon Labs CP210x USB to UART Bridge'
+
+        while not (comports := list(serial.tools.list_ports.grep(USB_port_name))):
+            print('No controller serial port found. Waiting and trying again.')
+            sleep(2.0)
+
+        if len(comports) > 1:
+            print('More than one suitable serial port was found. Please use the -p option to choose.')
+            print('Currently available serial ports are:', ', '.join([p.device for p in comports]))
+            exit()
+
+        serial_port = comports[0].device
 
     # Does the parsing and display of winch stats
     display = dataDisplayer()
 
     # The GUI window
-    root.title('Wireless winch status ({})'.format(xbeeCOMport))
+    root.title('Wireless winch status ({})'.format(serial_port))
 
     # Up the default font size
     default_font = font.nametofont('TkDefaultFont')
@@ -119,7 +135,7 @@ def main():
                       t=temp, b=batt, c=controller_status)
 
     # Create the threads that listen for messages from the hand controller
-    t1 = threading.Thread(target=COM_listen, args=(xbeeCOMport, 'object',))
+    t1 = threading.Thread(target=COM_listen, args=(serial_port, 'object',))
     t1.daemon = True  # makes the thread close when main() ends
 
     # Start the thread
