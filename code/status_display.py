@@ -63,12 +63,14 @@ with serial.Serial(serial_port, 9600, timeout=10) as s:
         line = s.readline().decode('ascii').rstrip()
 
         try:
-            if not line[0].isdigit():
+            if len(line) == 0:
+                continue
+            elif not line[0].isdigit():
                 # not a controller or winch message
-                pass
+                continue
             elif line[0] == '0':
                 # the controller status message which we don't deal with
-                pass
+                continue
             else:
                 # a winch message
                 winch_id, vin, temp, position, velocity, *version = line.split(',')
