@@ -70,9 +70,8 @@ def receive_status(m):
     # pull out the message from the received data
     msg = m['payload'].decode('ascii')
 
-    if m['broadcast']:
-        if msg == 'MONITOR':
-            active_monitors[m['sender_eui64']] = time.ticks_ms()
+    if msg == 'MONITOR':
+        active_monitors[m['sender_eui64']] = time.ticks_ms()
         return
 
     # Is a winch message, so send out on Bluetooth for the app
