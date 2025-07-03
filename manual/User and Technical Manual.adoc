@@ -118,6 +118,10 @@ The displayed line out values can be zeroed (using the ``Zero`` button) and rest
 
 image:images/androidAppQR.png[scaledwidth=2cm, float="centre"]
 
+=== Monitor device
+
+Connect a Monitor device to a USB port, whereupon winch and controller status messages will be output on a virtual serial port. Information on Monitor devices is given in <<Monitor Xbee device>> and the format of the messages they produce are detailed in <<_communication>>. Multiple Monitor devices can be used at the same time.
+
 === Charging the batteries 
 
 The controller contains a rechargable battery. To charge this, connect a micro USB cable to the unit and to a USB power supply (the USB port on a computer is fine - there is also a USB port on the Hikoki/Metabo HPT charger) and *turn the controller on*. Charging a completely flat battery will take about 4 hours and a fully charged battery will work for about 20 hours.
