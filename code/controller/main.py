@@ -1,7 +1,5 @@
 """Code to run on the Aqualyd echosounder calibration winch wireless control box."""
 
-
-from sys import stdout
 import machine
 # Status leds. Do these early cause default states of the pin can cause unwanted
 # operation of the leds
@@ -11,9 +9,6 @@ from max17048 import max17048  # noqa
 import time  # noqa
 import xbee  # noqa: E402
 from xbee import relay  #noqa
-
-# TODO
-# what happens when loopcount overflows?
 
 # Configurations
 
@@ -45,9 +40,9 @@ bSOC = 0.0  # [%]
 bCRate = 0.0  # [%/hr]
 
 # xbee's that we send status messages to
-active_monitors = {}
-max_monitor_age = 5000  # [ms]
-retire_monitor_interval = 10  # times through the main loop
+activeMonitors = {}
+maxMonitorAge = 5000  # [ms]
+retireMonitorInterval = 10  # times through the main loop
 
 # This xbee's node identifier
 ident = xbee.atcmd('NI')
@@ -71,7 +66,7 @@ def receive_status(m):
     msg = m['payload'].decode('ascii')
 
     if msg == 'MONITOR':
-        active_monitors[m['sender_eui64']] = time.ticks_ms()
+        activeMonitors[m['sender_eui64']] = time.ticks_ms()
         return
 
     # Is a winch message, so send out on Bluetooth for the app
@@ -91,7 +86,7 @@ def send_self_battery(cid, mode, v, soc, rate):
         pass
 
     # For xbee's that advertise themselves as monitors
-    for addr in active_monitors:
+    for addr in activeMonitors:
         try:
             xbee.transmit(addr, msg)
         except Exception:
@@ -101,9 +96,9 @@ def send_self_battery(cid, mode, v, soc, rate):
 def retire_monitors():
     """Remove old monitor addresses."""
     now = time.ticks_ms()
-    for addr, tick in list(active_monitors.items()):
-        if time.ticks_diff(now , tick) > max_monitor_age:
-            del active_monitors[addr]
+    for addr, tick in list(activeMonitors.items()):
+        if time.ticks_diff(now , tick) > maxMonitorAge:
+            del activeMonitors[addr]
 
 
 def setStatusLED(mode):
@@ -217,7 +212,7 @@ while True:
                     bSOC = min(bSOC, 100.0)
                 send_self_battery(ident, currentMode, bVolt, bSOC, bCRate)
 
-            if (loopCount % retire_monitor_interval) == 0:
+            if (loopCount % retireMonitorInterval) == 0:
                 retire_monitors()
 
             # Turn on the status leds every statusToggleRate time through
