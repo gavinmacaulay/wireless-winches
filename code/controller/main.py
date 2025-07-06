@@ -81,13 +81,6 @@ def receive_status(m):
         except Exception:
             pass
 
-    # And out on the controllers' serial to USB converter
-    #if currentMode == CONTROLLER:
-    #    try:
-    #        stdout.write(msg+'\n')
-    #    except Exception:
-    #        pass
-
 
 def send_self_battery(cid, mode, v, soc, rate):
     """Send out the state of the battery in the controller."""
@@ -103,13 +96,6 @@ def send_self_battery(cid, mode, v, soc, rate):
             xbee.transmit(addr, msg)
         except Exception:
             pass
-
-    # Send messages out via over the controllers' serial to USB converter
-    #if mode == CONTROLLER:
-    #    try:
-    #        stdout.write(msg+'\n')
-    #    except Exception:
-    #        pass
 
 
 def retire_monitors():
@@ -163,7 +149,6 @@ winch2in = machine.Pin(machine.Pin.board.D9, machine.Pin.IN, machine.Pin.PULL_UP
 winch3out = machine.Pin(machine.Pin.board.D4, machine.Pin.IN, machine.Pin.PULL_UP)
 winch3in = machine.Pin(machine.Pin.board.D3, machine.Pin.IN, machine.Pin.PULL_UP)
 
-# if currentMode == CONTROLLER:
 xbee.receive_callback(receive_status)
 
 while True:
@@ -174,10 +159,8 @@ while True:
                 loopCount = 0  # will cause a new battery message to be sent to the app
                 if currentMode == CONTROLLER:
                     currentMode = EXTENDER
-                    # xbee.receive_callback(None)
                 else:
                     currentMode = CONTROLLER
-                    # xbee.receive_callback(receive_status)
 
                 setStatusLED(currentMode)
 
