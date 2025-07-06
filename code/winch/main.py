@@ -182,7 +182,6 @@ def retire_monitors():
 # xbee's that we send status messages to
 active_monitors = {}
 max_monitor_age = 5000  # [ms]
-controller_gone_timeout  = 2000 # [ms]
 
 status_period = 500  # [ms] how often to send status messages
 max_motor_current = 2720  # [mA] From motor specs
@@ -258,7 +257,6 @@ for _ in range(4):
 
 then = time.ticks_ms()
 controller_addr = None
-last_control_time = None
 
 # Listen for wireless commands.
 while True:
@@ -278,10 +276,6 @@ while True:
     if m is not None:
         # We've received a controller message, so update our record of that
         controller_addr = sender_addr
-        last_control_time = time.ticks_ms()
-    elif time.ticks_diff(time.ticks_ms(), last_control_time) > controller_gone_timeout and controller_addr is not None:
-        # Expire the sending of winch status messages to the controller after a while
-        controller_addr = None
 
     # Send the status message if it has been a while
     if time.ticks_diff(time.ticks_ms(), then) > status_period:
