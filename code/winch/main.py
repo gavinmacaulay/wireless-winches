@@ -21,7 +21,7 @@ if _ADDR in devices:  # FRAM device present
 if ticAddr in devices:  # tic device present
     version = '3'  # FRAM, i2c
     uart = False  # use i2c to control the motor controller
-    print('Using i2c - motor controller detected on the bus.')
+    # print('Using i2c - motor controller detected on the bus.')
 
 
 class TicXbee:
@@ -248,7 +248,7 @@ velocity_actual = 0
 action = '_'
 winch_id = '_'
 
-wdt = WDT(timeout=2000)  # [ms]
+wdt = WDT(timeout=2500)  # [ms]
 
 # The micropython receive buffer needs to be emptied before we start processing
 # messages, but there is no flush() or similar call.
