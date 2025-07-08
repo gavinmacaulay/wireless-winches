@@ -193,12 +193,13 @@ Some examples:
 * `20125500` will cause winch 1 to take line in and winch 3 to pay line out, both at the maximum speed. Winch 2 will not rotate. As the 7th character is not `z`, the last two characters will have no effect.
 * `201128z2` will cause the line counter for winch 2 to be zeroed, winch 1 to take line in, and winch 3 to pay line out, both at half speed.
 
-The controller also sends a message to the Android app and to any Monitor Xbee devices using the same message style as the message sent by the winches (see below) and contains information about the controller. The message is a comma separated ASCII string in the form:
+The controller also sends a winch status message to the Android app and any active Monitor devices in the form of a comma separated ASCII string in the form:
 
 `0,id,mode,v.v,s.s,r.r`
 
 where the fields are:
 
+.Controller status message format.
 [%autowidth]
 |===
 |Field|Content|Decimal places|Units
@@ -219,7 +220,8 @@ A winch status message is sent by each winch unit back to the controller, which 
 
 where the fields are:
 
-[%autowidth,caption=test]
+.Winch status message format.
+[%autowidth]
 |===
 |Field|Content|Decimal places|Units
 |w|Winch identification (1, 2, or 3)||
@@ -232,6 +234,7 @@ where the fields are:
 
 A negative line paid out value indicates the line has been taken in more than paid out. A negative line speed indicates the line is being taken in. The winch version idenfication is used by the Andoid app to modify its' user interface to match the capabilities of the winch. It is optional and it and the preceeding comma are not produced by earlier versions of the winch code. Currently used values are:
 
+.Winch version information.
 [%autowidth]
 |===
 |Value|Comms with motor controller|Remembers line out
@@ -246,7 +249,7 @@ The Android app can send two-byte ASCII strings to the controller, which appends
 
 === Monitor Xbee device
 
-A Monitor Xbee is a device that receives copies of the winch and controller status messages and outputs them on a USB/serial port. The Monitor can be used to obtain winch status data independent of the Android app. Multiple Monitor devices can operate simultaneously, each outputting the winch and controller status messages. The Sparkfun Thing Plus Xbee is recommended for use as a Monitor device as it inorporates a USB connection that provides both serial data and a power supply for the Xbee. 
+A Monitor Xbee is a device that receives winch and controller status messages and outputs them on a USB/serial port - this is independent of the controller and Android app. Multiple Monitor devices can operate simultaneously, each outputting the winch and controller status messages. The Sparkfun Thing Plus Xbee is recommended for use as a Monitor device as it inorporates a USB connection that provides both serial data and a power supply for the Xbee. 
 
 Three example winch status display programs are provided:
 
