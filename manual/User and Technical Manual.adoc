@@ -219,7 +219,7 @@ A winch status message is sent by each winch unit back to the controller, which 
 
 where the fields are:
 
-[%autowidth]
+[%autowidth,caption=test]
 |===
 |Field|Content|Decimal places|Units
 |w|Winch identification (1, 2, or 3)||
