@@ -1,14 +1,14 @@
 """Code to run on the Aqualyd echosounder calibration winch wireless control box."""
 
-import machine
+import machine  # noqa: I001
 # Status leds. Do these early cause default states of the pin can cause unwanted
 # operation of the leds
 ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
 ledGreen = machine.Pin(machine.Pin.board.D19, machine.Pin.OUT, value=0)
 from max17048 import max17048  # noqa
-import time  # noqa
-import xbee  # noqa: E402
-from xbee import relay  #noqa
+import time
+import xbee
+from xbee import relay
 
 # Configurations
 
@@ -50,7 +50,7 @@ ident = xbee.atcmd('NI')
 # Battery monitoring
 try:
     battery = max17048()
-except Exception:
+except Exception:  # noqa: BLE001
     battery = None
 
 
@@ -73,23 +73,23 @@ def receive_status(m):
     if currentMode == CONTROLLER:
         try:
             relay.send(relay.BLUETOOTH, msg)
-        except Exception:
+        except Exception:   # noqa: BLE001, S110
             pass
 
 
 def send_self_battery(cid, mode, v, soc, rate):
     """Send out the state of the battery in the controller."""
-    msg = '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(cid, modeText[mode], v, soc, rate)
+    msg = '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(cid, modeText[mode], v, soc, rate)  # noqa: UP032
     try:
         relay.send(relay.BLUETOOTH, msg)
-    except Exception:
+    except Exception:   # noqa: BLE001, S110
         pass
 
     # For xbee's that advertise themselves as monitors
     for addr in activeMonitors:
         try:
             xbee.transmit(addr, msg)
-        except Exception:
+        except Exception:   # noqa: BLE001, S110
             pass
 
 
@@ -188,7 +188,7 @@ while True:
 
                 # The speed ADC is 12 bit, but we only want 8 bits to send to the winches,
                 # so chop off the lower bits (and it removes ADC noise too)
-                s += '{:03d}'.format(speed >> 4)
+                s += '{:03d}'.format(speed >> 4)  # noqa: UP032
 
                 # The app can generate control messages for the winches, so pass them on.
                 app_msg = relay.receive()
@@ -235,6 +235,6 @@ while True:
             if statusToggleRate != 1:
                 flashStatusLED(currentMode, False)
 
-    except Exception as e:
+    except Exception as e:   # noqa: BLE001
         # Will appear on the MicroPython terminal, so useful for debugging.
         print(str(e))
