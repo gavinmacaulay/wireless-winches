@@ -1,16 +1,18 @@
 """Code to run on the Aqualyd echosounder calibration winches."""
 
+import array # noqa: I001
+import time
 from sys import stdin, stdout
 import xbee
-import array
-import time
-from machine import WDT, I2C
+from machine import I2C, WDT
 from micropython import kbd_intr
-from store_value import storeValue
 from fram_i2c import _ADDR
+from store_value import storeValue
 
 ticAddr = 14  # i2c bus address for the motor controller
 version = '1'  # Winch code/hardware id 1 = no FRAM, no i2c
+
+debug = False
 
 # Work out which comms channel to use
 uart = True  # Use the UART to control the motor controller
@@ -37,7 +39,7 @@ class TicXbee:
         self.max_payload_len = int(xbee.atcmd('NP'))  # for sending over the air
 
 
-    def send_command(self, c, data_bytes):  # noqa
+    def send_command(self, c, data_bytes):
         # data_byes should be an iterable data structure
         buf = bytearray([c])
         if data_bytes:
@@ -48,7 +50,7 @@ class TicXbee:
         else:
             self.i2c.writeto(ticAddr, buf)
 
-    def get_variables(self, offset, length):  # noqa
+    def get_variables(self, offset, length):
         if uart:
             self.send_command(0xA1, [offset, length])
             result = stdin.buffer.read(length)
@@ -59,42 +61,42 @@ class TicXbee:
             result = self.i2c.readfrom(ticAddr, length)
         return result
 
-    def get_velocity(self):  # noqa
+    def get_velocity(self):
         # Get velocity
         v = tic.get_variables(0x26, 4)  # signed 32-bit
         v = int.from_bytes(v[0:4], 'little')  # microsteps per 10000s
         v = -1 * self.twos_complement(v, 32)
         return v
 
-    def set_velocity(self, velocity, step_mode):  # noqa
+    def set_velocity(self, velocity, step_mode):
         # A 32-bit write for the velocity
         self.send_command(0xE3, self.encode_32bit(velocity))
         # A 7-bit write for the stepping
         self.send_command(0x94, [step_mode & 127])
 
-    def set_current_limit(self, current):  # noqa
+    def set_current_limit(self, current):
         # A 7-bit write for the current
         current_value = int(current / 40)
         self.send_command(0x91, [current_value & 127])
 
-    def get_serial_device_number(self):  # noqa
+    def get_serial_device_number(self):
         n = self.get_variables(0x07, 1)
         return n
 
-    def reset_command_timeout(self):  # noqa
+    def reset_command_timeout(self):
         self.send_command(0x8C, [])
 
-    def exit_safe_start(self):  # noqa
+    def exit_safe_start(self): 
         self.send_command(0x83, [])
 
-    def energize(self):  # noqa
+    def energize(self):
         self.send_command(0x85, [])
 
-    def halt_and_set_position(self, pos):  # noqa
+    def halt_and_set_position(self, pos):
         # A signed 32-bit write for the position
         self.send_command(0xEC, self.encode_32bit(pos))
 
-    def encode_32bit(self, v):  # noqa
+    def encode_32bit(self, v):
         if uart:
             return [((v >> 7) & 1) | ((v >> 14) & 2) |
                     ((v >> 21) & 4) | ((v >> 28) & 8),
@@ -108,7 +110,7 @@ class TicXbee:
                 v >> 16 & 0xFF,
                 v >> 24 & 0xFF]
 
-    def twos_complement(self, value, bitWidth):  # noqa
+    def twos_complement(self, value, bitWidth):
 
         if value >= 2**bitWidth:
             return value  # should raise an exception here...
@@ -136,7 +138,7 @@ class TicXbee:
 
         return (vin, position, velocity, xbee_temp)
 
-    def get_and_send_status(self, sender_addr):
+    def get_and_send_status(self, send_addr):
         # Get winch status and send it to the controller and any monitors
         (vin, pos_actual, velocity_actual, t) = self.get_status()
 
@@ -147,34 +149,41 @@ class TicXbee:
             # This value only gets used on startup, when pos_actual is zero, so storing
             # p_physical ensures that on startup, p_physical is the same as on shutdown/power loss.
             pos_store.put(p_physical)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
-        data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, p_physical, v_physical,
-                                                      version)
+        data = '{},{:.1f},{},{:.2f},{:.2f},{}'.format(winch, vin, t, p_physical,  # noqa: UP032
+                                                      v_physical, version)
         if len(data) > self.max_payload_len:
-            data = '{},error - message too long'.format(winch)
+            data = '{}, error - message too long'.format(winch)  # noqa: UP032
 
-        # send to whoever sent the most recent message we received
-        if sender_addr is not None:
+        # send to the requested address
+        if send_addr is not None:
             try:
-                xbee.transmit(sender_addr, data)
-            except Exception:
+                xbee.transmit(send_addr, data)
+            except Exception:  # noqa: BLE001, S110
                 pass
 
-        # For xbee's that advertise themselves as monitors
+        # For xbees that advertise themselves as monitors
         for addr in active_monitors:
             try:
                 xbee.transmit(addr, data)
-            except Exception:
+            except Exception:  # noqa: BLE001, S110
                 pass
 
 def retire_monitors():
     """Remove old monitor addresses."""
     now = time.ticks_ms()
+
+    if debug:
+        print('Monitors before retiring: {}'.format(len(active_monitors)))  # noqa: UP032
+
     for addr, tick in list(active_monitors.items()):
         if time.ticks_diff(now , tick) > max_monitor_age:
             del active_monitors[addr]
+
+    if debug:
+        print('Monitors after retiring: {}'.format(len(active_monitors)))  # noqa: UP032
 
 
 # Config variables
@@ -227,7 +236,7 @@ step_tic_pulses = (max_tic_pulses - min_tic_pulses) / (speed_steps-1)
 
 # speed as a signed 32 bit integer. Use array instead of list,
 # for efficiency (as per micropython guidelines)
-speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(0, speed_steps)])
+speed = array.array('l', [int(i*step_tic_pulses + min_tic_pulses) for i in range(speed_steps)])
 
 tic = TicXbee()
 
@@ -260,35 +269,36 @@ controller_addr = None
 
 # Listen for wireless commands.
 while True:
-    m = xbee.receive()  # this does not block
+    m = xbee.receive()  # this does not block, returns None if no message available
     wdt.feed()
 
+    # Send the status message if it has been a while
+    if time.ticks_diff(time.ticks_ms(), then) > status_period:
+        # this uses the previous loop's version of controller_addr
+        tic.get_and_send_status(controller_addr)
+        retire_monitors()
+        then = time.ticks_ms()
+
+    if m is None:
+        continue
+
+    if debug:
+        print('Message received: {}'.format(m['payload'].decode('ascii')))
+
     # get the address of the sender
-    sender_addr = m['sender_eui64'] if m else None
+    sender_addr = m['sender_eui64']
     # pull out the message from the received data
-    cmd = m['payload'].decode('ascii') if m else None
+    cmd = m['payload'].decode('ascii')
 
     # Update/refresh the list of xbees that want to get status messages
     if cmd == 'MONITOR':
         active_monitors[sender_addr] = time.ticks_ms()
         continue
 
-    if m is not None:
-        # We've received a controller message, so update our record of that
-        controller_addr = sender_addr
+    # We've received a controller message, so update our record of that
+    controller_addr = sender_addr
 
-    # Send the status message if it has been a while
-    if time.ticks_diff(time.ticks_ms(), then) > status_period:
-        tic.get_and_send_status(controller_addr)
-        retire_monitors()
-        then = time.ticks_ms()
-
-    # Below this if statement we deal with winch control messages, so skip them if no message
-    if m is None:
-        continue
-
-    # Under the assumption that we've received a winch control message from
-    # a controller, work out what to do.
+    # Work out what to do with the controller message
 
     # parse out the speed from the payload
     try:
@@ -316,7 +326,7 @@ while True:
         pos_offset = 0.0
         try:
             pos_store.put(0.0)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
         tic.get_and_send_status(controller_addr)  # update the status displays immediately
