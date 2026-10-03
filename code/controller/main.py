@@ -12,6 +12,8 @@ from xbee import relay
 
 # Configurations
 
+debug = True
+
 # Time between checking controls (also the time between sending messages to the winches)
 pollInterval = 100  # [ms]
 
@@ -73,7 +75,7 @@ def receive_status(m):
     if currentMode == CONTROLLER:
         try:
             relay.send(relay.BLUETOOTH, msg)
-        except Exception:   # noqa: BLE001, S110
+        except Exception:  # noqa: BLE001, S110
             pass
 
 
@@ -82,23 +84,27 @@ def send_self_battery(cid, mode, v, soc, rate):
     msg = '0,{},{},{:0.2f},{:0.1f},{:0.1f}'.format(cid, modeText[mode], v, soc, rate)  # noqa: UP032
     try:
         relay.send(relay.BLUETOOTH, msg)
-    except Exception:   # noqa: BLE001, S110
+    except Exception:  # noqa: BLE001, S110
         pass
 
     # For xbee's that advertise themselves as monitors
     for addr in activeMonitors:
         try:
             xbee.transmit(addr, msg)
-        except Exception:   # noqa: BLE001, S110
+        except Exception:  # noqa: BLE001, S110
             pass
 
 
 def retire_monitors():
     """Remove old monitor addresses."""
     now = time.ticks_ms()
+    if debug:
+        print('Monitors before retiring: {}'.format(len(activeMonitors)))  # noqa: UP032
     for addr, tick in list(activeMonitors.items()):
         if time.ticks_diff(now , tick) > maxMonitorAge:
             del activeMonitors[addr]
+    if debug:
+        print('Monitors after retiring: {}'.format(len(activeMonitors)))  # noqa: UP032
 
 
 def setStatusLED(mode):
@@ -235,6 +241,6 @@ while True:
             if statusToggleRate != 1:
                 flashStatusLED(currentMode, False)
 
-    except Exception as e:   # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         # Will appear on the MicroPython terminal, so useful for debugging.
         print(str(e))
