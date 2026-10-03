@@ -11,9 +11,10 @@ Andre Peeters
 2017/10/31
 """
 
-from machine import I2C
 import binascii
 import struct
+
+from machine import I2C
 
 
 class max17048:
@@ -34,14 +35,14 @@ class max17048:
 
     def __str__(self):
         """Get string representation of the values."""
-        rs = "i2c address is {}\n".format(self.max17048Address)
-        rs += "version is {}\n".format(self.getVersion())
-        rs += "id is {}\n".format(self.getID())
-        rs += "Battery voltage is {:.2f} V\n".format(self.getVCell())
-        rs += "Charge rate is {:.2f} %/hr\n".format(self.getChargeRate())
-        rs += "SOC is {:.1f} %\n".format(self.getSOC())
-        rs += "alert threshold is {}%\n".format(self.getAlertThreshold())
-        rs += "in alert is {}".format(self.inAlert())
+        rs = "i2c address is {}\n".format(self.max17048Address)  # noqa: UP032
+        rs += "version is {}\n".format(self.getVersion())  # noqa: UP032
+        rs += "id is {}\n".format(self.getID())  # noqa: UP032
+        rs += "Battery voltage is {:.2f} V\n".format(self.getVCell())  # noqa: UP032
+        rs += "Charge rate is {:.2f} %/hr\n".format(self.getChargeRate())  # noqa: UP032
+        rs += "SOC is {:.1f} %\n".format(self.getSOC())  # noqa: UP032
+        rs += "alert threshold is {}%\n".format(self.getAlertThreshold())  # noqa: UP032
+        rs += "in alert is {}".format(self.inAlert())  # noqa: UP032
         return rs
 
     def address(self):
