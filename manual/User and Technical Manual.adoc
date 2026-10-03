@@ -1,8 +1,8 @@
 = Wireless echosounder calibration winch manual
 :author: Aqualyd Limited
 :email: gavin@aqualyd.nz
-:revnumber: 1.4
-:revdata: July 2025
+:revnumber: 1.5
+:revdata: October 2026
 :sectnums:
 :doctype: book
 :toc:
@@ -15,7 +15,7 @@
 
 [colophon]
 
-(C) 2025 Aqualyd Limited +
+(C) 2026 Aqualyd Limited +
 341 Higgins Road +
 Wakefield +
 New Zealand
@@ -32,15 +32,15 @@ This is the User Manual for the Aqualyd wireless echosounder calibration winch s
 
 === Batteries
 
-The controller batteries (Nokia BL-5C or equivalent) need to be installed. The steps to do this are:
+The controller batteries (Nokia BL-5C or equivalent) may need to be installed. The steps to do this are:
 
-1. Remove the silicone case from the controllers.
-2. Remove the loose half of the case to expose the controller electronics.
+1. Remove the lanyard and silicone case from the controllers.
+2. Unscrew and remove the back of the case to expose the controller electronics.
 3. Remove one of the screws that holds the strap that sits across the battery holder and rotate it out of the way.
 4. Insert the battery, taking care to line up the battery terminals.
 5. Rotate the strap into place and insert and tighten the screw.
-6. Find the plastic bag containing four small black screws, reinstall the controller case halves and screw them together.
-7. Put the silicone cover back on and attach a lanyard strap.
+6. Reinstall the controller case halves and screw them together.
+7. Put the silicone cover back on and attach the lanyard strap.
 8. Turn the controller on and check that an LED is flashing on the end of the controller case.
 
 The winch batteries (Hikoki/Metabo HPT MultiVolt) slide vertically down onto the black clip on each winch. Press the gray buttons on the side of the batteries and pull up to remove a battery.
@@ -55,20 +55,20 @@ Line should be added to the reels so that the free end leaves from underneath th
 
 Assemble each winch/pole as per this list:
 
-1. Insert a telescopic pole into the yellow tube on each winch unit (orient the pole so that the brand names is uppermost), 
+1. Insert a telescopic pole into the yellow tube on each winch unit (orient the pole so that the brand name is uppermost), 
 2. Extend the telescopic pole to the desired length,
-3. Align the holes in the yellow tube and pole and inserting the locking pin (the pole will extend about 200 mm inboard from the yellow tube),
-4. Insert the supplied eye-bolt into the hole in the onboard end of the pole,
+3. Align the holes in the yellow tube and pole and insert the locking pin (the pole will extend about 200 mm inboard from the yellow tube),
+4. Insert the supplied eye-bolt into the hole in the inboard end of the pole,
 5. Attach a tie-down cord to each eye-bolt using the attached carabiner,
 6. Insert a battery into the winch unit
-7. Pay out line and lead it through the eye-bolt on the outboard end of the pole,
-8. Secure the assembled unit to the vessel,
+7. Pay out line (using the controller) and lead it through the eye-bolt on the outboard end of the pole,
+8. Secure the assembled unit to the vessel railing or bulwark rail and attach the tie-down cord to the vessel.
 
 .Winch unit installed on a ship's railing showing hose clamps, securing pin, and attachment carabiner.
 [[assembled_installed_winch_unit]]
 image::images/winchUnitInstalled.png[scaledwidth=10cm,float="right"]
 
-The winch units are designed to be attached to a pipe or plate railing on a vessel (<<assembled_installed_winch_unit>>). A pipe attachment uses the supplied hose clamps to secure the aluminium section of the winch unit to the railing. A plate attachment uses clamps (user supplied) to secure the winch units' plastic base or the aluminium section to the flat plate. 
+The winch units are designed to be attached to a pipe or bulwark rail on a vessel (<<assembled_installed_winch_unit>>). A pipe attachment uses the supplied hose clamps to secure the aluminium section of the winch unit to the railing. A bulwakr rail attachment uses clamps (user supplied) to secure the winch units' plastic base or the aluminium section to the flat plate. 
 
 The leverage from the extended poles is countered by the cord attachment from the inboard end of the pole to suitable point(s) on the vessel (e.g., a lower railing or gusset).
 
@@ -120,7 +120,7 @@ image:images/androidAppQR.png[scaledwidth=2cm, float="centre"]
 
 === Monitor device
 
-Connect a Monitor device to a USB port, whereupon winch and controller status messages will be output on a virtual serial port. Information on Monitor devices is given in <<Monitor Xbee device>> and the format of the messages they produce are detailed in <<_communication>>. Multiple Monitor devices can be used at the same time.
+Connect a Monitor device to a USB port, whereupon winch and controller status messages will be output on a virtual serial port. Information on Monitor devices is given in <<Monitor Xbee device>> and the format of the messages they produce are detailed in <<_communication>>. Multiple Monitor devices can be used at the same time. Monitor devices are not part of the standard calibration kit.
 
 === Charging the batteries 
 
@@ -128,7 +128,7 @@ The controller contains a rechargable battery. To charge this, connect a micro U
 
 Note that the controller will be operating and transmitting whenever USB power is suppled, but will not charge the battery until the power switch is turned on (the on/off switch connects or disconnects the battery from the system - it does not affect supply of USB power to the controller's electronics). This means that a controller with a flat, faulty, or absent battery can be used normally by connecting USB power - it will operate as per normal and charge the battery if present.
 
-The winch batteries are charged with the supplied Hikoki/Metabo HPT charger. It takes about 30 minutes to fully charge an empty winch battery. 
+The winch batteries are charged with the supplied Hikoki/Metabo HPT charger. It takes about 40 minutes to fully charge an empty winch battery. 
 
 = Technical Manual
 
@@ -138,7 +138,7 @@ This is the Technical Manual for the Aqualyd wireless echosounder calibration wi
 
 The overall system consists of two controllers and three winches. Communication between these units occurs via a 2.4 GHz mesh network, provided by Digi XBee3 radio modules. The controller broadcasts a message at 10 Hz that contains the state of all three in/out switches (up, down, stationary) and the potentiometer (0-255). Each winch unit listens to these messages, picks out the relevant in/out switch state and sends speed and direction commands to the motor controller, which operates the stepper model to rotate the winch drum. The relationship between the speed setting on the controller and the actual motor speed is determined by calculations done by the code running in the winch unit. At every 5^th^ broadcast, each winch replies with winch status information which the controller sends via bluetooth to the Android app.
 
-The system is provided in three parts: 1) a transit/storage case that contains the controllers and three winch units,, 2) a transit/storage case with the winch batteries and chargers, and 3) a tube that contains the three poles (<<whole_system>>). 
+The system is provided in three parts: 1) a transit/storage case that contains the controllers and three winch units, 2) a transit/storage case with the winch batteries and chargers, and 3) a tube that contains the three poles (<<whole_system>>). 
 
 .Supplied winch system showing (left) the transit case with included winches and controllers, (centre) the tube containing the poles, and (right) the battery and charger case.
 [[whole_system]]
@@ -146,11 +146,11 @@ image::images/wholeSystem.png[scaledwidth=18cm,float=right]
 
 === Winches
 
-The motors are of NEMA 23 size with an integrated 4.25:1 planetary gearbox, supplied by StepperOnline (model 23HS30-2804S-PG4). The motor is driven from a Pololu Tic T246 motor controller which is controlled via serial (I2C in later models) communication with a microPython programm running on the XBee3 radio module in each winch unit. 
+The motors are of NEMA 23 size with an integrated 4.25:1 planetary gearbox, supplied by StepperOnline (model 23HS30-2804S-PG4). The motor is driven from a Pololu Tic T246 motor controller which is controlled via I2C (serial in earlier models) communication with a microPython programm running on the XBee3 radio module in each winch unit. 
 
 The acceleration and decceleration applied when the motor speed is changed is determined by a programmable setting in the Tic T246, as well as the maximum motor speed, and command timeout when no controller messages are received. Each unit stores the current line out value in non-volatile RAM and recalls that on power up so that battery swaps preserve the line out value.
 
-The winches were designed to hold a 6 kg load and are able to lift and lower 6 kg at slow speeds. Operation at higher speeds is only possible with smaller loads. The winch units operate with a 10-40 V DC input, but at least 36 V is needed to achieve sufficient motor torque to hold a 6 kg line load. 
+The winches were designed to hold a 6 kg load and are able to lift and lower 6 kg at slow speeds. Operation at higher speeds is only possible with lighter loads. The winch units operate with a 10-40 V DC input, but at least 36 V is needed to achieve sufficient motor torque to hold a 6 kg line load. 
 
 === Controller
 
@@ -162,7 +162,7 @@ The mode switch on the controller sets whether the controller operates as a cont
 
 The controller runs a microPython program on the XBee3 module to translate buttons presses and speed setting into the message that is broadcast to the winches. The XBee3 in each winch also runs a microPython program that receives these messages, decodes them and sends motor speed and direction commands to the motor controller. The code that runs on these XBee3 modules is available on https://github.com/gavinmacaulay/wireless-winches.git[github].
 
-Uploading the microPython code to the XBee3 module in the controller is done via the USB connector on the controller. Uploading to the XBee3 module in the winches requires a separate board that provides serial communication access to the Xbee3 (e.g. an XBee Grove Development Board). Modifying the parameters in the Pololu motor controller can be done via the USB connector on the Pololu unit. 
+Uploading the microPython code to the XBee3 module in the controller is done via the USB connector on the controller. Uploading to the XBee3 module in the winches requires a separate board that provides serial communication access to the Xbee3 (e.g. an XBee Grove Development Board) or a USB to uart adapter to a serial connector on the device. Modifying the parameters in the Pololu motor controller can be done via the USB connector on the Pololu unit. 
 
 === Changing winch identification
 
@@ -322,4 +322,5 @@ A wireless system consists of the following components:
 |Controller charging cord (USB)|1
 |User & Technical manual (online)|1
 |Hose clamps (46-70 mm diameter)|6
+|Hose clamp nut driver with 6, 7, and 8 mm sockets|1
 |===
