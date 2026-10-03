@@ -6,7 +6,7 @@ _SIZE = const(2048)  # Chip size [bytes]
 _ADDR = const(0x50)  # FRAM I2C address 0x50 to 0x57
 
 
-class FRAM():
+class FRAM:
     """Class to communicate with the FRAM."""
 
     def __init__(self, i2c):

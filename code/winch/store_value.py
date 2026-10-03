@@ -1,12 +1,13 @@
 """Store data in FRAM."""
 
-from machine import I2C
+from struct import calcsize, pack, unpack
+
 from fram_i2c import FRAM
-from struct import pack, unpack, calcsize
+from machine import I2C
 from micropython import const
 
 
-class storeValue():
+class storeValue:
     """Store a single value in FRAM with checksum.
 
     Alternates between two storage locations so that if a store fails due
