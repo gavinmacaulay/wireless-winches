@@ -13,6 +13,7 @@ ticAddr = 14  # i2c bus address for the motor controller
 version = '1'  # Winch code/hardware id 1 = no FRAM, no i2c
 
 debug = False
+monitor = False
 
 # Work out which comms channel to use
 uart = True  # Use the UART to control the motor controller
@@ -165,11 +166,12 @@ class TicXbee:
                 pass
 
         # For xbees that advertise themselves as monitors
-        for addr in active_monitors:
-            try:
-                xbee.transmit(addr, data)
-            except Exception:  # noqa: BLE001, S110
-                pass
+        if monitor:
+            for addr in active_monitors:
+                try:
+                    xbee.transmit(addr, data)
+                except Exception:  # noqa: BLE001, S110
+                    pass
 
 def retire_monitors():
     """Remove old monitor addresses."""
@@ -276,7 +278,8 @@ while True:
     if time.ticks_diff(time.ticks_ms(), then) > status_period:
         # this uses the previous loop's version of controller_addr
         tic.get_and_send_status(controller_addr)
-        retire_monitors()
+        if monitor:
+            retire_monitors()
         then = time.ticks_ms()
 
     if m is None:
@@ -292,7 +295,8 @@ while True:
 
     # Update/refresh the list of xbees that want to get status messages
     if cmd == 'MONITOR':
-        active_monitors[sender_addr] = time.ticks_ms()
+        if monitor:
+            active_monitors[sender_addr] = time.ticks_ms()
         continue
 
     # We've received a controller message, so update our record of that

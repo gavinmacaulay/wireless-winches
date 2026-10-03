@@ -13,6 +13,7 @@ from xbee import relay
 # Configurations
 
 debug = False
+monitor = False
 
 # Time between checking controls (also the time between sending messages to the winches)
 pollInterval = 100  # [ms]
@@ -68,7 +69,8 @@ def receive_status(m):
     msg = m['payload'].decode('ascii')
 
     if msg == 'MONITOR':
-        activeMonitors[m['sender_eui64']] = time.ticks_ms()
+        if monitor:
+            activeMonitors[m['sender_eui64']] = time.ticks_ms()
         return
 
     # Is a winch message, so send out on Bluetooth for the app
@@ -88,11 +90,12 @@ def send_self_battery(cid, mode, v, soc, rate):
         pass
 
     # For xbee's that advertise themselves as monitors
-    for addr in activeMonitors:
-        try:
-            xbee.transmit(addr, msg)
-        except Exception:  # noqa: BLE001, S110
-            pass
+    if monitor:
+        for addr in activeMonitors:
+            try:
+                xbee.transmit(addr, msg)
+            except Exception:  # noqa: BLE001, S110
+                pass
 
 
 def retire_monitors():
@@ -218,7 +221,7 @@ while True:
                     bSOC = min(bSOC, 100.0)
                 send_self_battery(ident, currentMode, bVolt, bSOC, bCRate)
 
-            if (loopCount % retireMonitorInterval) == 0:
+            if monitor and ((loopCount % retireMonitorInterval) == 0):
                 retire_monitors()
 
             # Turn on the status leds every statusToggleRate time through
