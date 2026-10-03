@@ -1,6 +1,9 @@
 """Code to run on the Aqualyd echosounder calibration winch wireless control box."""
 
-import machine  # noqa: I001
+import gc
+
+import machine
+
 # Status leds. Do these early cause default states of the pin can cause unwanted
 # operation of the leds
 ledRed = machine.Pin(machine.Pin.board.D15, machine.Pin.OUT, value=0)
@@ -234,6 +237,7 @@ while True:
 
             if (loopCount % statusToggleRate) == 0:
                 flashStatusLED(currentMode, True)
+                gc.collect()
 
             loopCount += 1
 
