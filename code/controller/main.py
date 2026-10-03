@@ -12,7 +12,7 @@ from xbee import relay
 
 # Configurations
 
-debug = True
+debug = False
 
 # Time between checking controls (also the time between sending messages to the winches)
 pollInterval = 100  # [ms]
